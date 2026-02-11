@@ -5,6 +5,7 @@ import requests
 PREMIUM_DATA_COST = 0.05  # € simulé
 ESTIMATION_ERROR_FACTOR = 0.15  # 15% erreur estimation basique
 PREMIUM_ERROR_FACTOR = 0.02    # 2% erreur avec données premium
+CRISIS_PROBABILITY = 0.15  
 
 def decide_action(state, budget, risk_tolerance=0.7):
     """
@@ -89,3 +90,21 @@ def get_premium_data():
         }
 
     return {"data": response.json(), "transaction": None}
+
+def detect_crisis():
+    """Génère un événement de crise aléatoire avec impact économique"""
+    if random.random() < CRISIS_PROBABILITY:
+        crisis_type = random.choice([
+            "cloud_cover",      # Production solaire effondrée
+            "grid_failure",     # Impossible de vendre → pénalités
+            "price_crash"       # Prix énergie s'effondre
+        ])
+        
+        impact = {
+            "cloud_cover": {"production_drop": 0.85, "message": "🌩️ Cloud cover: Solar production -85%"},
+            "grid_failure": {"penalty": 0.30, "message": "⚡ Grid failure: Contract penalties -0.30€"},
+            "price_crash": {"price_drop": 0.70, "message": "📉 Price crash: Energy price -70%"}
+        }[crisis_type]
+        
+        return {"type": crisis_type, **impact}
+    return None
