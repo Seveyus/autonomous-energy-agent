@@ -3,6 +3,8 @@ from environment import get_environment_state
 from agent import decide_action, get_premium_data
 from fastapi import HTTPException
 from uuid import uuid4
+from skale_payment import send_payment, address
+
 
 
 app = FastAPI()
@@ -35,17 +37,13 @@ def run_agent():
 valid_payments = set()
 
 @app.get("/premium-weather")
-def premium_weather(payment_id: str = None):
+def premium_weather(tx_hash: str = None):
 
-    if payment_id not in valid_payments:
-        raise HTTPException(
-            status_code=402,
-            detail="Payment Required"
-        )
+    if tx_hash not in valid_transactions:
+        raise HTTPException(status_code=402, detail="Payment Required")
 
-    # données premium plus précises
     return {
-        "solar_production_precise": 85.0  # valeur fixe pour démo
+        "solar_production_precise": 85.0
     }
 
 @app.post("/pay")
@@ -57,4 +55,21 @@ def make_payment():
     return {
         "status": "payment_successful",
         "payment_id": payment_id
+    }
+
+
+valid_transactions = set()
+
+@app.post("/x402/pay")
+def x402_pay():
+
+    tx_hash = send_payment(address, 0.001)
+    tx_hash_hex = tx_hash.hex()
+
+    valid_transactions.add(tx_hash_hex)
+
+    return {
+        "status": "paid",
+        "tx_hash": tx_hash_hex,
+        "explorer": f"https://base-sepolia-testnet-explorer.skalenodes.com:10032/tx/{tx_hash_hex}"
     }

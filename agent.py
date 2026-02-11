@@ -17,19 +17,23 @@ def decide_action(state, budget):
 
 def get_premium_data():
 
-    # tentative sans paiement
     response = requests.get("http://127.0.0.1:8000/premium-weather")
 
     if response.status_code == 402:
 
-        # payer
-        payment = requests.post("http://127.0.0.1:8000/pay")
-        payment_id = payment.json()["payment_id"]
+        payment = requests.post("http://127.0.0.1:8000/x402/pay")
+        payment_json = payment.json()
 
-        # rejouer requête avec preuve paiement
+        tx_hash = payment_json["tx_hash"]
+
         response = requests.get(
             "http://127.0.0.1:8000/premium-weather",
-            params={"payment_id": payment_id}
+            params={"tx_hash": tx_hash}
         )
 
-    return response.json()
+        return {
+            "data": response.json(),
+            "transaction": payment_json
+        }
+
+    return {"data": response.json(), "transaction": None}
