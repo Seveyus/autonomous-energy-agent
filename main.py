@@ -5,6 +5,8 @@ from agent import decide_action, get_premium_data
 from skale_payment import send_payment, address
 from fastapi.responses import HTMLResponse
 import web3
+from agent import PREMIUM_DATA_COST, ESTIMATION_ERROR_FACTOR
+import random
 
 
 app = FastAPI(title="Agentic Commerce Energy Node")
@@ -14,9 +16,16 @@ agent_budget = 1.0  # Budget initial en sFUEL ou monnaie simulée
 history = []
 valid_transactions = set()
 
+
 @app.get("/run")
-def run_agent():
+def run_agent(risk_tolerance: float = 0.7):
+    """
+    risk_tolerance: 0.0 (conservateur) → 1.0 (agressif)
+    """
     global agent_budget
+
+    if agent_budget <= 0:
+        return {"error": "Budget exhausted"}
 
     # 1. Perception de l'environnement
     state = get_environment_state()
@@ -24,50 +33,51 @@ def run_agent():
     price = state["energy_price"]
     consumption = state["consumption"]
 
-    # 2. Prise de décision (Arbitrage)
-    decision = decide_action(state, agent_budget)
+    # 2. Décision stratégique
+    decision = decide_action(state, agent_budget, risk_tolerance)
     
     premium_data = None
-    cost_of_data = 0.05 # Coût simulé pour le calcul de profit
+    tx_hash = None
 
     if decision == "buy_premium_data":
-        # Simulation d'achat via le workflow x402
+        # 3. Workflow x402 (paiement SKALE réel)
         try:
-            # On appelle l'API premium (qui déclenche le paiement SKALE internement)
-            premium_response = get_premium_data() 
+            premium_response = get_premium_data()
             premium_data = premium_response["data"]
-            tx_hash = premium_response["transaction"]["tx_hash"]
+            if premium_response["transaction"]:
+                tx_hash = premium_response["transaction"]["tx_hash"]
             
-            agent_budget -= cost_of_data
-            valid_transactions.add(tx_hash)
+            agent_budget -= PREMIUM_DATA_COST
+            if tx_hash:
+                valid_transactions.add(tx_hash)
         except Exception as e:
             return {"error": f"Payment failed: {str(e)}"}
-    else:
-        tx_hash = None
 
-    # 3. Calcul Économique (Le "Cœur" de la démo)
-    # Profit estimé sans la donnée précise (marge d'erreur de 15%)
-    estimated_production_basic = solar * 0.85
-    basic_profit = (estimated_production_basic - consumption) * price
+    # 4. Calcul économique
+    error_basic = random.uniform(-ESTIMATION_ERROR_FACTOR, ESTIMATION_ERROR_FACTOR)
+    estimated_prod_basic = solar * (1 + error_basic)
+    basic_profit = (estimated_prod_basic - consumption) * price
 
-    if premium_data:
-        # Profit réel calculé avec la précision chirurgicale du premium
-        precise_production = premium_data["solar_production_precise"]
-        premium_profit = (precise_production - consumption) * price
-        net_profit = premium_profit - cost_of_data
+    if premium_data:  # ✅ CORRIGÉ : pas de typo
+        precise_prod = premium_data.get("solar_production_precise", solar)
+        premium_profit = (precise_prod - consumption) * price
+        net_profit = premium_profit - PREMIUM_DATA_COST
     else:
         premium_profit = basic_profit
         net_profit = basic_profit
 
-    # 4. Archivage
+    # 5. Archivage
     log_entry = {
         "step": len(history) + 1,
         "decision": decision,
+        "risk_tolerance": round(risk_tolerance, 2),
         "tx_hash": tx_hash,
         "basic_profit_estimate": round(basic_profit, 4),
         "premium_profit": round(premium_profit, 4),
         "net_profit": round(net_profit, 4),
-        "remaining_budget": round(agent_budget, 4)
+        "remaining_budget": round(agent_budget, 4),
+        "solar": round(solar, 2),
+        "price": round(price, 4)
     }
     history.append(log_entry)
 
