@@ -1,0 +1,31 @@
+# Environnement virtuel
+venv/
+.env
+
+# Fichiers Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+*.log
+
+# Cache & metadata
+*.sqlite3
+*.db
+*.DS_Store
+
+# Dossiers générés
+dist/
+build/
+*.egg-info/
+
+# Uvicorn reload cache
+*.pid
+
+# IDE / éditeurs
+.vscode/
+.idea/
+*.swp
+
