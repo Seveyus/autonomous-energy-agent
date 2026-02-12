@@ -61,35 +61,83 @@ def should_buy_premium_signal(
     return evpi > premium_cost * safety
 
 
-def investment_policy(
+def investment_policy_explain(
     cash: float,
     drawdown: float,
     risk_tolerance: float,
     crisis_active: bool,
+    net_edge: float,
+    step: int,
+    last_deploy_step: int | None,
     min_cash_buffer: float = 1.0,
+    deploy_cost: float = 1.0,
 ):
-    """
-    Finance-grade policy:
-    - En crise: HOLD par défaut
-    - MAIS: si drawdown profond + risque élevé -> contrarian "buy the dip"
-    - Hors crise: investir si cash buffer ok et ROI projeté ok
-    """
+    rationale = []
+    meta = {}
 
-    if drawdown < -0.30:
-        return "hold_cash"
+    # thresholds
+    normal_threshold = 0.12 - 0.06 * risk_tolerance
+    crisis_threshold = 0.20
+    dip_threshold = 0.25
 
+    meta["threshold_normal"] = round(normal_threshold, 4)
+    meta["threshold_crisis"] = round(crisis_threshold, 4)
+    meta["threshold_dip"] = round(dip_threshold, 4)
+
+    # cooldown
+    COOLDOWN = 2 if risk_tolerance < 0.75 else 1
+    meta["cooldown"] = COOLDOWN
+
+    # hard kill-switch
+    if drawdown <= -0.30:
+        rationale.append(f"Drawdown {drawdown:.2%} <= -30% → capital preservation")
+        return "hold_cash", rationale, meta
+
+    # feasibility
+    if cash < (deploy_cost + min_cash_buffer):
+        rationale.append(f"Cash {cash:.2f} < deploy_cost+buffer ({deploy_cost+min_cash_buffer:.2f})")
+        return "hold_cash", rationale, meta
+
+    # cooldown active
+    if last_deploy_step is not None:
+        since = step - last_deploy_step
+        remaining = max(0, COOLDOWN - since)
+        meta["cooldown_remaining"] = remaining
+        if since <= COOLDOWN:
+            rationale.append(f"Cooldown active: last deploy at epoch {last_deploy_step} (since={since})")
+            return "hold_cash", rationale, meta
+    else:
+        meta["cooldown_remaining"] = 0
+
+    # drawdown regime
+    if drawdown <= -0.10:
+        rationale.append(f"Risk control: drawdown {drawdown:.2%} <= -10%")
+        if (not crisis_active) and risk_tolerance >= 0.8 and net_edge >= dip_threshold:
+            rationale.append(f"Contrarian allowed: net_edge {net_edge:.3f} >= {dip_threshold:.2f} and risk_tolerance {risk_tolerance:.2f}")
+            return "deploy_capital", rationale, meta
+        rationale.append("Hold cash: signal not strong enough for contrarian buy")
+        return "hold_cash", rationale, meta
+
+    # crisis regime
     if crisis_active:
-        if risk_tolerance >= 0.7 and drawdown < -0.12 and cash >= (min_cash_buffer + 0.5):
-            return "deploy_capital"
-        return "hold_cash"
+        rationale.append("Crisis regime: default HOLD")
+        if risk_tolerance >= 0.75 and net_edge >= crisis_threshold:
+            rationale.append(f"Deploy allowed: net_edge {net_edge:.3f} >= {crisis_threshold:.2f} and risk_tolerance {risk_tolerance:.2f}")
+            return "deploy_capital", rationale, meta
+        rationale.append(f"Hold: net_edge {net_edge:.3f} below crisis threshold {crisis_threshold:.2f}")
+        return "hold_cash", rationale, meta
 
-    if cash < min_cash_buffer:
-        return "hold_cash"
+    # normal regime
+    rationale.append("Normal regime")
+    rationale.append(f"net_edge {net_edge:.3f} vs threshold {normal_threshold:.3f}")
 
-    projected_roi = random.uniform(-0.10, 0.25)
-    threshold = 0.02 - (0.04 * risk_tolerance)
+    if net_edge >= normal_threshold:
+        rationale.append("Deploy: expected edge clears threshold")
+        return "deploy_capital", rationale, meta
 
-    if projected_roi > threshold:
-        return "deploy_capital"
+    rationale.append("Hold: edge below threshold")
+    return "hold_cash", rationale, meta
 
-    return "hold_cash"
+
+# Backward-compat: some code imports investment_policy
+investment_policy = investment_policy_explain
