@@ -47,3 +47,4 @@ def send_payment(to_address: str, amount_ether: float = 0.001):
         raise RuntimeError("Transaction failed on-chain")
 
     return tx_hash
+    

@@ -5,10 +5,13 @@ from pydantic import BaseModel
 import random
 import json
 from typing import Optional
+import asyncio
+from fastapi.responses import StreamingResponse
+
 
 from environment import get_environment_state
 from skale_payment import send_payment, address
-from agent import detect_crisis, investment_policy, should_buy_premium_signal
+from agent import detect_crisis, investment_policy_explain, should_buy_premium_signal
 
 app = FastAPI(title="AI Energy Capital Entity — SKALE x402")
 templates = Jinja2Templates(directory="templates")
@@ -29,7 +32,8 @@ portfolio = {
         {"id": "SOLAR-1", "type": "solar", "capacity_kw": 100.0, "efficiency": 0.85, "acquisition_cost": 0.5}
     ],
     "nav_history": [],
-    "info_spend_total": 0.0
+    "info_spend_total": 0.0,
+    "last_deploy_step": None  # ✅ Ajouté: track du dernier déploiement
 }
 
 valid_transactions: set[str] = set()
@@ -117,7 +121,209 @@ def reset_simulation():
     portfolio["assets"] = [{"id": "SOLAR-1", "type": "solar", "capacity_kw": 100.0, "efficiency": 0.85, "acquisition_cost": 0.5}]
     portfolio["nav_history"] = []
     portfolio["info_spend_total"] = 0.0
+    portfolio["last_deploy_step"] = None  # ✅ Reset aussi
     MARKET_STRESS = 1.0
+
+
+# ---------- Cinematic run state ----------
+CINEMATIC_LAST = {
+    "status": "idle",
+    "story": [],
+    "summary": {},
+}
+
+def _mk_story_event(label: str, epoch: dict) -> dict:
+    return {
+        "label": label,
+        "step": epoch.get("step"),
+        "nav": epoch.get("nav"),
+        "hwm": epoch.get("hwm"),
+        "drawdown": epoch.get("drawdown"),
+        "regime": epoch.get("regime"),
+        "crisis": epoch.get("crisis"),
+        "used_premium": epoch.get("used_premium"),
+        "evpi": epoch.get("evpi"),
+        "info_spend": epoch.get("info_spend"),
+        "net_edge": epoch.get("net_edge"),
+        "decision": epoch.get("decision"),
+        "cash": epoch.get("cash"),
+        "asset_count": epoch.get("asset_count"),
+        "tx_hash": epoch.get("tx_hash"),
+        "premium_tx": epoch.get("premium_tx"),
+    }
+
+def _compute_cinematic_summary(story: list[dict]) -> dict:
+    if not story:
+        return {"ok": False, "reason": "no_story"}
+
+    start = story[0]
+    end = story[-1]
+
+    # net edge cumulé
+    net_edge = 0.0
+    net_edge_total = 0.0
+    premium_count = 0
+    blackout_avoided = 0
+    settlement_count = 0
+    worst_dd = 0.0
+
+    for s in story:
+        ne = s.get("net_edge")
+        if isinstance(ne, (int, float)):
+            net_edge_total += float(ne)
+        if s.get("used_premium"):
+            premium_count += 1
+        crisis = s.get("crisis") or ""
+        if "avoided" in crisis.lower():
+            blackout_avoided += 1
+        if s.get("tx_hash"):
+            settlement_count += 1
+        dd = s.get("drawdown")
+        if isinstance(dd, (int, float)):
+            worst_dd = min(worst_dd, float(dd))
+
+    nav_start = float(start["nav"]) if start.get("nav") is not None else 0.0
+    nav_end = float(end["nav"]) if end.get("nav") is not None else 0.0
+
+    return {
+        "ok": True,
+        "nav_start": round(nav_start, 4),
+        "nav_end": round(nav_end, 4),
+        "nav_delta": round(nav_end - nav_start, 4),
+        "worst_drawdown": round(worst_dd, 4),
+        "premium_epochs": premium_count,
+        "net_edge_total": round(net_edge_total, 4),
+        "blackout_avoided": blackout_avoided,
+        "onchain_settlements": settlement_count,
+        "final_decision": end.get("decision"),
+        "final_regime": end.get("regime"),
+        "final_assets": end.get("asset_count"),
+        "final_cash": end.get("cash"),
+    }
+
+
+@app.post("/cinematic/run")
+def cinematic_run(req: DemoRequest):
+    """
+    Storyboard "judge-proof":
+    1) Reset
+    2) Build HWM (2 epochs)
+    3) Force premium condition (one epoch with normal regime)
+    4) Shock: grid_failure
+    5) Recovery: 3 epochs
+    6) Try settlement: call /demo (SKALE tx) + 1 more epoch
+    Returns: full story + compact summary
+    """
+    global CINEMATIC_LAST
+
+    reset_simulation()
+    CINEMATIC_LAST = {"status": "running", "story": [], "summary": {}}
+
+    story = []
+    rt = max(0.0, min(1.0, req.risk_tolerance))
+
+    # 1) build high-water mark (makes drawdown meaningful)
+    e1 = _run_epoch_internal(rt)
+    story.append(_mk_story_event("Warmup-1 (build HWM)", e1))
+
+    e2 = _run_epoch_internal(rt)
+    story.append(_mk_story_event("Warmup-2 (build HWM)", e2))
+
+    # 2) premium epoch (will trigger naturally if EVPI > cost)
+    e3 = _run_epoch_internal(rt)
+    story.append(_mk_story_event("Info Market (premium decision)", e3))
+
+    # 3) shock
+    e4 = _run_epoch_internal(rt, force_crisis="grid_failure")
+    story.append(_mk_story_event("Shock (forced grid failure)", e4))
+
+    # 4) recovery
+    e5 = _run_epoch_internal(rt)
+    story.append(_mk_story_event("Recovery-1", e5))
+
+    e6 = _run_epoch_internal(rt)
+    story.append(_mk_story_event("Recovery-2", e6))
+
+    e7 = _run_epoch_internal(rt)
+    story.append(_mk_story_event("Recovery-3", e7))
+
+    # 5) settlement proof (on-chain)
+    settle = run_demo()
+    settle_tx = None
+    if isinstance(settle, dict) and settle.get("status") == "success":
+        settle_tx = settle.get("tx_hash")
+
+    # one more epoch to show post-settlement state
+    e8 = _run_epoch_internal(max(rt, 0.9))
+    if settle_tx and not e8.get("tx_hash"):
+        # annotate settlement tx if epoch didn't deploy
+        e8["tx_hash"] = settle_tx
+
+    story.append(_mk_story_event("On-chain settlement + final state", e8))
+
+    summary = _compute_cinematic_summary(story)
+
+    CINEMATIC_LAST = {"status": "done", "story": story, "summary": summary}
+    return {"status": "ok", "story": story, "summary": summary}
+
+
+@app.get("/cinematic/summary")
+def cinematic_summary():
+    """
+    Simple summary endpoint for README/video overlay.
+    """
+    return CINEMATIC_LAST
+
+
+@app.get("/cinematic/stream")
+def cinematic_stream(risk_tolerance: float = 0.7):
+    async def event_gen():
+        reset_simulation()
+        rt = max(0.0, min(1.0, float(risk_tolerance)))
+
+        def sse(data: dict):
+            return f"data: {json.dumps(data)}\n\n"
+
+        # steps
+        steps = [
+            ("Warmup-1 (build HWM)", {"force": None}),
+            ("Warmup-2 (build HWM)", {"force": None}),
+            ("Info Market (premium decision)", {"force": None}),
+            ("Shock (forced grid failure)", {"force": "grid_failure"}),
+            ("Recovery-1", {"force": None}),
+            ("Recovery-2", {"force": None}),
+            ("Recovery-3", {"force": None}),
+            ("On-chain settlement + final state", {"force": None}),
+        ]
+
+        # Stream each epoch
+        for label, cfg in steps:
+            epoch = _run_epoch_internal(rt, force_crisis=cfg["force"])
+            payload = _mk_story_event(label, epoch)
+            payload["type"] = "epoch"
+            yield sse(payload)
+            await asyncio.sleep(0.15)
+
+        # Settlement (can take time)
+        yield sse({"type": "status", "message": "⛓️ Sending SKALE settlement transaction..."})
+
+        settle = run_demo()
+        yield sse({"type": "settlement", "result": settle})
+
+        # Final summary
+        story = portfolio["nav_history"]
+        # story ici est list d'epochs brute; on reconstruit une mini story lisible
+        story_events = []
+        for i, e in enumerate(story[-len(steps):], start=0):
+            story_events.append(_mk_story_event(steps[i][0], e))
+
+        summary = _compute_cinematic_summary(story_events)
+        yield sse({"type": "summary", "summary": summary})
+
+        yield sse({"type": "done"})
+
+    return StreamingResponse(event_gen(), media_type="text/event-stream")
+
 
 
 # ---------- Payment / x402 ----------
@@ -133,7 +339,7 @@ def x402_pay():
         return {
             "status": "paid",
             "tx_hash": tx_hash,
-            "explorer": f"https://base-sepolia-testnet-explorer.skalenodes.com:10032/tx/{tx_hash}"
+            "explorer": f"https://base-sepolia-testnet-explorer.skalenodes.com:10032/tx/  {tx_hash}"
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -270,14 +476,20 @@ def _run_epoch_internal(risk_tolerance: float, force_crisis: Optional[str] = Non
 
     survival_mode = drawdown < -0.15
 
-    # 6) allocation decision
-    decision = investment_policy(
+    net_edge = round(evpi - info_spend, 4)
+    
+    decision, rationale, meta = investment_policy_explain(
         cash=portfolio["cash"],
         drawdown=drawdown,
         risk_tolerance=risk_tolerance,
-        crisis_active=bool(crisis) if crisis_message != "✅ Stable Operations" else False,
-        min_cash_buffer=MIN_CASH_BUFFER
+        crisis_active=bool(crisis),
+        net_edge=net_edge,
+        step=len(portfolio["nav_history"]),
+        last_deploy_step=portfolio.get("last_deploy_step"),
+        min_cash_buffer=MIN_CASH_BUFFER,
+        deploy_cost=DEPLOY_COST,
     )
+
 
     tx_hash = None
 
@@ -295,6 +507,9 @@ def _run_epoch_internal(risk_tolerance: float, force_crisis: Optional[str] = Non
                 "efficiency": round(random.uniform(0.80, 0.92), 2),
                 "acquisition_cost": DEPLOY_COST
             })
+
+            # ✅ Track du déploiement
+            portfolio["last_deploy_step"] = len(portfolio["nav_history"])
 
             current_nav = calculate_nav(asset_multiplier)
             drawdown, hwm = compute_drawdown_against_prev_hwm(current_nav)
@@ -316,6 +531,10 @@ def _run_epoch_internal(risk_tolerance: float, force_crisis: Optional[str] = Non
         "cash": round(portfolio["cash"], 4),
         "asset_count": len(portfolio["assets"]),
         "tx_hash": tx_hash,
+
+        "rationale": rationale,
+        "policy_meta": meta,
+
 
         # Info arbitrage (load-bearing)
         "used_premium": used_premium,
@@ -384,7 +603,7 @@ def run_demo():
     try:
         tx_hash_bytes = send_payment(address, 0.001)
         tx_hash = "0x" + tx_hash_bytes.hex()
-        explorer_url = f"https://base-sepolia-testnet-explorer.skalenodes.com:10032/tx/{tx_hash}"
+        explorer_url = f"https://base-sepolia-testnet-explorer.skalenodes.com:10032/tx/  {tx_hash}"
         return {
             "status": "success",
             "message": "✅ SKALE settlement confirmed — capital deployment recorded on-chain",

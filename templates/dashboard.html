@@ -1,270 +1,523 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>⚡ AI Energy Capital Entity — Control Room</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: #0a0a1a;
-            color: #e0e0ff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            line-height: 1.6;
             padding: 20px;
         }
-        .container { max-width: 1400px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 30px; padding: 25px; border-bottom: 1px solid rgba(106, 17, 203, 0.3); }
-        .header h1 {
-            font-size: 2.8em;
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(106, 17, 203, 0.2);
+            border-radius: 15px;
+            border: 1px solid rgba(106, 17, 203, 0.4);
+            box-shadow: 0 8px 32px rgba(106, 17, 203, 0.2);
+        }
+
+        h1 {
+            font-size: 2.5em;
             margin-bottom: 10px;
             background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        .header .subtitle {
-            color: #aaa;
-            font-size: 1.3em;
-            max-width: 800px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
-        .header .subtitle span { color: #00ff99; font-weight: bold; }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-bottom: 25px; }
-        .card {
-            background: linear-gradient(145deg, #111122, #0f0f1a);
-            padding: 28px;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 20, 40, 0.5);
-            border: 1px solid rgba(106, 17, 203, 0.3);
+        .subtitle {
+            color: #aaa;
+            font-size: 1.1em;
+            margin-top: 10px;
         }
-        .card h2 {
-            font-size: 1.6em;
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        /* AJOUTE CECI : Une grille spéciale pour la ligne du bas */
+        .grid-bottom {
+            display: grid;
+            grid-template-columns: 1.2fr 2fr; /* Allocation prend 1 part, Graphique prend 2 parts */
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        /* Responsive : sur mobile, on repasse en 1 seule colonne */
+        @media (max-width: 1000px) {
+            .grid-bottom { 
+                grid-template-columns: 1fr; 
+            }
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(106, 17, 203, 0.4);
+            border-color: rgba(106, 17, 203, 0.5);
+        }
+
+        h2 {
+            font-size: 1.5em;
             margin-bottom: 20px;
             color: #6a11cb;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .metric { font-size: 2.4em; font-weight: bold; margin: 15px 0; background: linear-gradient(90deg, #6a11cb, #2575fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .metric.smaller { font-size: 1.8em; }
+        .metric {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 15px 0;
+            background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .metric-label {
+            color: #aaa;
+            font-size: 0.9em;
+            display: block;
+            margin-top: 5px;
+        }
 
         .regime-badge {
             display: inline-block;
-            padding: 4px 12px;
-            margin-left: 8px;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
             font-weight: bold;
-            font-size: 0.85em;
-            border-radius: 6px;
-            text-transform: uppercase;
-            vertical-align: middle;
-        }
-        .regime-crisis { background: rgba(255, 87, 34, 0.2); border: 1px solid #ff5722; color: #ff9e80; }
-        .regime-stress { background: rgba(255, 153, 0, 0.2); border: 1px solid #ff9100; color: #ffb74d; }
-        .regime-normal { background: rgba(0, 230, 118, 0.15); border: 1px solid #00e676; color: #81c784; }
-
-        .banner {
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 15px;
-            font-weight: bold;
-            font-size: 0.95em;
-            border-left: 4px solid;
-        }
-        .banner-crisis {
-            background: rgba(255, 87, 34, 0.15);
-            border-left-color: #ff5722;
-            color: #ff9e80;
-        }
-        .banner-stable {
-            background: rgba(0, 230, 118, 0.10);
-            border-left-color: #00e676;
-            color: #9affd1;
-        }
-        .banner-survival {
-            background: rgba(255, 165, 0, 0.15);
-            border-left-color: #ffa500;
-            color: #ffb74d;
+            margin-left: 10px;
         }
 
-        .info-panel {
-            margin-top: 14px;
-            padding: 12px;
+        .regime-NORMAL {
+            background: rgba(0, 230, 118, 0.2);
+            color: #00e676;
+            border: 1px solid rgba(0, 230, 118, 0.4);
+        }
+
+        .regime-STRESS {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.4);
+        }
+
+        .regime-CRISIS {
+            background: rgba(255, 23, 68, 0.2);
+            color: #ff1744;
+            border: 1px solid rgba(255, 23, 68, 0.4);
+        }
+
+        .info-market {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
             border-radius: 10px;
-            border: 1px solid rgba(0, 255, 153, 0.25);
-            background: rgba(0, 255, 153, 0.06);
-            color: #bfffe6;
-            font-size: 0.95em;
-            line-height: 1.7;
-        }
-        .info-panel b { color: #00ff99; }
-        .info-badge {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 999px;
-            font-weight: bold;
-            font-size: 0.85em;
-            margin-left: 6px;
-            border: 1px solid rgba(0, 255, 153, 0.3);
-            background: rgba(0, 255, 153, 0.10);
-            color: #00ff99;
+            margin-top: 15px;
+            border-left: 4px solid #6a11cb;
         }
 
-        .slider-container { margin: 25px 0; }
-        .slider-label { display: flex; justify-content: space-between; margin-bottom: 12px; font-weight: bold; }
+        .info-market h3 {
+            font-size: 1em;
+            margin-bottom: 10px;
+            color: #6a11cb;
+        }
+
+        .info-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .info-item {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .info-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #6a11cb;
+        }
+
+        .crisis-alert {
+            background: rgba(255, 23, 68, 0.15);
+            border: 2px solid rgba(255, 23, 68, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            animation: pulse 2s infinite;
+        }
+
+        .survival-mode {
+            background: rgba(255, 82, 82, 0.15);
+            border: 2px solid rgba(255, 82, 82, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(255, 23, 68, 0); }
+        }
+
+        .assets-list {
+            margin-top: 15px;
+        }
+
+        .asset-item {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            font-size: 0.95em;
+        }
+
+        .asset-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .slider-container {
+            margin: 25px 0;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #fff;
+        }
+
         input[type="range"] {
             width: 100%;
-            height: 10px;
-            border-radius: 5px;
-            background: linear-gradient(90deg, #ff1744 0%, #ff9100 50%, #00e676 100%);
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #ff1744 0%, #6a11cb 50%, #00e676 100%);
             outline: none;
             -webkit-appearance: none;
+            appearance: none;
         }
+
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 28px;
-            height: 28px;
+            appearance: none;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
-            background: white;
+            background: #6a11cb;
             cursor: pointer;
-            box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 15px rgba(106, 17, 203, 0.4);
+        }
+
+        .philosophy {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-style: italic;
+            line-height: 1.7;
+            border-left: 4px solid #6a11cb;
+        }
+
+        .philosophy strong {
+            color: #6a11cb;
+            font-weight: bold;
         }
 
         button {
-            background: linear-gradient(90deg, #6a11cb, #2575fc);
-            border: none;
-            padding: 16px 40px;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
             color: white;
+            border: none;
+            padding: 14px 25px;
+            border-radius: 10px;
+            font-size: 1em;
             font-weight: bold;
-            font-size: 1.2em;
-            border-radius: 12px;
             cursor: pointer;
-            margin: 12px 5px;
-            transition: all 0.3s;
-            box-shadow: 0 6px 20px rgba(106, 17, 203, 0.4);
+            transition: all 0.3s ease;
+            margin: 5px 0;
+            box-shadow: 0 4px 15px rgba(106, 17, 203, 0.4);
+            width: calc(50% - 10px);
         }
-        button:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(106, 17, 203, 0.6); }
-        button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(106, 17, 203, 0.6);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
 
         .btn-secondary {
-            background: linear-gradient(90deg, #00c853, #00e676);
-            box-shadow: 0 6px 20px rgba(0, 230, 118, 0.25);
+            background: linear-gradient(135deg, #00e676, #00c853);
         }
-        .btn-secondary:hover { box-shadow: 0 8px 25px rgba(0, 230, 118, 0.35); }
 
-        .tx-badge {
-            display: inline-block;
-            background: rgba(106, 17, 203, 0.15);
-            padding: 10px 18px;
+        #result {
+            margin-top: 20px;
+            min-height: 80px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            display: none;
+        }
+
+        #result.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chart-container {
+            position: relative;
+            height: 500px;
+            width: 100%;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+            color: #6a11cb;
+            font-size: 1.2em;
+        }
+
+        .premium-badge {
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            color: #000;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.85em;
+        }
+
+        .free-badge {
+            background: rgba(0, 230, 118, 0.2);
+            color: #00e676;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.85em;
+            border: 1px solid rgba(0, 230, 118, 0.4);
+        }
+
+        .tx-hash {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 12px;
             border-radius: 8px;
             font-family: monospace;
-            font-size: 0.9em;
-            margin-top: 12px;
+            font-size: 0.85em;
+            margin-top: 10px;
             word-break: break-all;
-            border: 1px solid rgba(106, 17, 203, 0.3);
         }
-        .tx-badge a { color: #6a11cb; text-decoration: none; font-weight: bold; }
 
-        .chart-container { position: relative; height: 380px; margin-top: 20px; }
-        .asset-item {
+        .tx-hash a {
+            color: #6a11cb;
+            text-decoration: none;
+        }
+
+        .tx-hash a:hover {
+            text-decoration: underline;
+        }
+
+        /* Un peu de style pour séparer la rationale des boutons */
+        .rationale-section {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(106, 17, 203, 0.3);
+        }
+
+        .rationale-section h3 {
+            margin-bottom: 15px;
+            color: #6a11cb;
+        }
+
+        .rationale {
+            list-style: none;
+            padding: 0;
+        }
+
+        .rationale li {
+            background: rgba(0, 0, 0, 0.2);
             padding: 12px;
-            margin: 8px 0;
-            background: rgba(106, 17, 203, 0.08);
-            border-radius: 10px;
-            border-left: 4px solid #6a11cb;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            font-size: 0.95em;
+            line-height: 1.6;
         }
-        .asset-item.solar { border-left-color: #ff9100; background: rgba(255, 145, 0, 0.08); }
 
-        .philosophy {
-            background: rgba(0, 20, 40, 0.6);
-            border-left: 4px solid #6a11cb;
-            padding: 20px;
-            border-radius: 0 12px 12px 0;
-            margin: 25px 0;
-            font-style: italic;
-            line-height: 1.7;
+        .rationale li:last-child {
+            margin-bottom: 0;
+        }
+
+        .meta {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            font-size: 0.85em;
+            color: #aaa;
+        }
+
+        .meta small {
+            display: block;
+            line-height: 1.6;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
+        <header>
             <h1>⚡ AI Energy Capital Entity</h1>
-            <p class="subtitle">Autonomous on-chain capital allocator for energy assets — Powered by <span>SKALE x402</span></p>
-        </div>
+            <p class="subtitle">Autonomous on-chain capital allocator for energy assets — Powered by SKALE x402</p>
+        </header>
 
         <div class="grid">
             <div class="card">
                 <h2>📊 Net Asset Value</h2>
                 <div class="metric">{{ current_nav }} €</div>
-                <div style="color: #aaa; font-size: 1.05em; line-height: 1.8;">
-                    High Water Mark: {{ max_nav }} €<br>
-                    Drawdown: <span style="font-weight:bold;">{{ "%.2f"|format(last_epoch.drawdown * 100) }}%</span><br>
-                    Regime: <span class="regime-badge {% if last_epoch.regime == 'CRISIS' %}regime-crisis{% elif last_epoch.regime == 'STRESS' %}regime-stress{% else %}regime-normal{% endif %}">{{ last_epoch.regime }}</span>
-                </div>
+                <span class="metric-label">High Water Mark: {{ max_nav }} €</span>
+                <span class="metric-label">Drawdown: {{ "%.2f"|format(last_epoch.drawdown * 100) }}%</span>
+                <span class="metric-label">
+                    Regime: {{ last_epoch.regime }}
+                    <span class="regime-badge regime-{{ last_epoch.regime }}">{{ last_epoch.regime }}</span>
+                </span>
 
-                <div class="info-panel">
-                    <div>
+                <div class="info-market">
+                    <h3>
                         Info Market:
                         {% if last_epoch.used_premium %}
-                        <span class="info-badge">PREMIUM USED</span>
+                            <span class="premium-badge">PREMIUM USED</span>
                         {% else %}
-                        <span class="info-badge" style="color:#bfffe6;border-color:rgba(191,255,230,0.3);background:rgba(191,255,230,0.08);">FREE FORECAST</span>
+                            <span class="free-badge">FREE FORECAST</span>
                         {% endif %}
+                    </h3>
+                    <div class="info-row">
+                        <div class="info-item">
+                            <div class="info-label">EVPI</div>
+                            <div class="info-value">{{ "%.4f"|format(last_epoch.evpi) }} €</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Cost</div>
+                            <div class="info-value">{{ "%.4f"|format(last_epoch.info_spend) }} €</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Net Edge</div>
+                            <div class="info-value">{{ "%.4f"|format(last_epoch.net_edge) }} €</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Total Spend</div>
+                            <div class="info-value">{{ "%.4f"|format(last_epoch.info_spend_total) }} €</div>
+                        </div>
                     </div>
-                    <div><b>EVPI</b>: {{ last_epoch.evpi }} € | <b>Cost</b>: {{ last_epoch.info_spend }} €</div>
-                    <div><b>Net Edge</b>: {{ last_epoch.net_edge }} €</div>
-                    <div><b>Total Info Spend</b>: {{ last_epoch.info_spend_total }} €</div>
                     {% if last_epoch.premium_tx %}
-                    <div style="margin-top:8px; font-family: monospace; font-size:0.9em;">
-                        premium_tx: {{ last_epoch.premium_tx[:18] }}...
-                    </div>
+                        <div class="tx-hash">
+                            premium_tx: <a href="https://base-sepolia-testnet-explorer.skalenodes.com:10032/tx/{{ last_epoch.premium_tx }}" target="_blank">{{ last_epoch.premium_tx[:18] }}...</a>
+                        </div>
                     {% endif %}
                 </div>
 
                 {% if last_epoch.crisis %}
                     {% if last_epoch.crisis.startswith("✅") %}
-                        <div class="banner banner-stable">✅ Stable Operations</div>
+                        <div style="margin-top: 15px; padding: 12px; background: rgba(0, 230, 118, 0.1); border-radius: 8px; border-left: 4px solid #00e676;">
+                            ✅ {{ last_epoch.crisis }}
+                        </div>
                     {% else %}
-                        <div class="banner banner-crisis">⚠️ {{ last_epoch.crisis }}</div>
+                        <div class="crisis-alert">
+                            ⚠️ {{ last_epoch.crisis }}
+                        </div>
                     {% endif %}
                 {% endif %}
 
                 {% if last_epoch.survival_mode %}
-                <div class="banner banner-survival">🛡️ SURVIVAL MODE ACTIVE — Capital preservation priority</div>
+                    <div class="survival-mode">
+                        🛡️ SURVIVAL MODE ACTIVE — Capital preservation priority
+                    </div>
                 {% endif %}
             </div>
 
             <div class="card">
                 <h2>🏭 Energy Assets</h2>
                 <div class="metric">{{ asset_count }}</div>
-                <p style="color: #aaa; font-size: 1.05em;">
-                    Tokenized production capacity<br>
-                    Total: {{ total_capacity }} kW
-                </p>
-                <div style="margin-top: 15px;">
+                <span class="metric-label">Tokenized production capacity</span>
+                <span class="metric-label">Total: {{ total_capacity }} kW</span>
+
+                <div class="assets-list">
                     {% for a in last_assets %}
-                    <div class="asset-item solar">⚡ {{ a.id }} | {{ a.capacity_kw|int }} kW | {{ (a.efficiency * 100)|round(0) }}% eff.</div>
+                        <div class="asset-item">
+                            ⚡ {{ a.id }} | {{ a.capacity_kw|int }} kW | {{ (a.efficiency * 100)|round(0) }}% eff.
+                        </div>
                     {% endfor %}
                 </div>
             </div>
 
             <div class="card">
                 <h2>💰 Treasury</h2>
-                <div class="metric smaller">{{ cash }} €</div>
-                <p style="color: #aaa; font-size: 1.05em;">
-                    Liquid reserves<br>
-                    Available for capital deployment
-                </p>
-                <p style="margin-top:10px;"><b>Last Decision:</b> {{ last_epoch.decision.replace('_', ' ').title() }}</p>
-                {% if last_epoch.tx_hash %}
-                <div class="tx-badge">
-                    <b>SKALE TX:</b> <a href="https://base-sepolia-testnet-explorer.skalenodes.com:10032/tx/{{ last_epoch.tx_hash }}" target="_blank">
-                        {{ last_epoch.tx_hash[:12] }}...
-                    </a>
+                <div class="metric">{{ cash }} €</div>
+                <span class="metric-label">Liquid reserves</span>
+                <span class="metric-label">Available for capital deployment</span>
+
+                <div style="margin-top: 25px; padding: 15px; background: rgba(0, 0, 0, 0.2); border-radius: 10px;">
+                    <strong>Last Decision:</strong> {{ last_epoch.decision.replace('_', ' ').title() }}
+                    {% if last_epoch.tx_hash %}
+                        <div class="tx-hash">
+                            SKALE TX: <a href="https://base-sepolia-testnet-explorer.skalenodes.com:10032/tx/{{ last_epoch.tx_hash }}" target="_blank">{{ last_epoch.tx_hash[:12] }}...</a>
+                        </div>
+                    {% endif %}
                 </div>
-                {% endif %}
             </div>
         </div>
 
-        <div class="grid">
+        <!-- MODIFICATION ICI : Nouvelle grille avec rationales intégrées -->
+        <div class="grid-bottom">
+            
             <div class="card">
                 <h2>🎛️ Capital Allocation</h2>
                 <div class="philosophy">
@@ -283,16 +536,42 @@
                     </p>
                 </div>
 
-                <button onclick="runEpoch()" id="runBtn">▶ Run Capital Epoch</button>
-                <button onclick="runCinematicDemo()" id="cinBtn" class="btn-secondary">🎬 Run Cinematic Demo</button>
-                <button onclick="runDemo()" id="demoBtn">🚀 SKALE Settlement Demo</button>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    <button onclick="runEpoch()" id="runBtn" style="flex:1;">▶ Run Epoch</button>
+                    <button onclick="runCinematicDemo()" id="cinBtn" class="btn-secondary" style="flex:1;">🎬 Cinematic</button>
+                </div>
+                <button onclick="runDemo()" id="demoBtn" style="width:100%; margin-left:0; margin-right:0;">🚀 SKALE Settlement Demo</button>
 
-                <div id="result" style="margin-top: 20px; min-height: 140px;"></div>
+                <div id="result"></div>
+
+                <div class="rationale-section">
+                    <h3>🧾 Decision Rationale</h3>
+                    {% if last_epoch and last_epoch.rationale %}
+                        <ul class="rationale">
+                            {% for r in last_epoch.rationale %}
+                                <li>{{ r }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% if last_epoch.policy_meta %}
+                            <div class="meta">
+                                <small>
+                                    thresholds: normal={{ last_epoch.policy_meta.threshold_normal }},
+                                    crisis={{ last_epoch.policy_meta.threshold_crisis }}<br>
+                                    cooldown: {{ last_epoch.policy_meta.cooldown_remaining }}
+                                </small>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <p style="opacity:0.7; margin-top:15px; font-style: italic; font-size:0.9em;">
+                            Run an epoch to see the agent's logic trace.
+                        </p>
+                    {% endif %}
+                </div>
             </div>
 
             <div class="card">
                 <h2>📈 NAV Growth Curve</h2>
-                <div class="chart-container">
+                <div class="chart-container" style="height: 500px;">
                     <canvas id="navChart"></canvas>
                 </div>
             </div>
@@ -300,156 +579,275 @@
     </div>
 
     <script>
-        const navData = {{ nav_history_json | safe }};
-
-        if (navData.length > 0) {
-            const ctx = document.getElementById('navChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: navData.map(h => "Epoch " + h.step),
-                    datasets: [{
-                        label: 'NAV (€)',
-                        data: navData.map(h => h.nav),
-                        borderColor: '#6a11cb',
-                        backgroundColor: 'rgba(106, 17, 203, 0.1)',
-                        borderWidth: 4,
-                        tension: 0.3,
-                        fill: true,
-                        pointRadius: 5,
-                        pointBackgroundColor: '#6a11cb'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { labels: { color: '#e0e0ff', font: { size: 14 } } },
-                    },
-                    scales: {
-                        x: { ticks: { color: '#888' }, grid: { color: 'rgba(106, 17, 203, 0.1)' } },
-                        y: { ticks: { color: '#888' }, grid: { color: 'rgba(106, 17, 203, 0.1)' } }
-                    }
-                }
-            });
-        }
-
+        // Slider interaction
         const slider = document.getElementById('riskSlider');
-        const riskValue = document.getElementById('riskValue');
-        slider.oninput = function() { riskValue.innerText = this.value; };
+        const valueDisplay = document.getElementById('riskValue');
 
+        slider.oninput = function() {
+            valueDisplay.textContent = this.value;
+        };
+
+        // Run Epoch
         async function runEpoch() {
             const btn = document.getElementById('runBtn');
-            const resDiv = document.getElementById('result');
-            const risk = parseFloat(slider.value);
-
+            const resultDiv = document.getElementById('result');
             btn.disabled = true;
-            btn.innerHTML = '⏳ Executing...';
-            resDiv.innerHTML = '';
+            btn.textContent = '⏳ Running...';
 
             try {
-                const res = await fetch('/epoch', {
+                const risk = slider.value;
+                const response = await fetch('/epoch', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ risk_tolerance: risk })
+                    body: JSON.stringify({ risk_tolerance: parseFloat(risk) })
                 });
-                const data = await res.json();
 
-                const dd = (data.drawdown * 100).toFixed(2);
-                const stable = (data.crisis && data.crisis.startsWith("✅"));
+                const data = await response.json();
 
-                resDiv.innerHTML = `
-                    <p style="color: #00e676; font-weight: bold;">✅ Epoch ${data.step} completed</p>
-                    <p>NAV: ${data.nav.toFixed(4)} € | HWM: ${data.hwm.toFixed(4)} € | Drawdown: ${dd}%</p>
-                    <p>Decision: <strong>${data.decision.replace('_', ' ')}</strong></p>
-                    <p>Info: premium=${data.used_premium} | EVPI=${data.evpi}€ | cost=${data.info_spend}€ | net_edge=${data.net_edge}€</p>
-                    ${data.premium_tx ? `<p style="font-family:monospace;font-size:0.9em;">premium_tx: ${data.premium_tx.substring(0, 18)}...</p>` : ''}
-                    <div class="banner ${stable ? 'banner-stable' : 'banner-crisis'}">${stable ? '✅ Stable Operations' : '⚠️ ' + data.crisis}</div>
-                    ${data.survival_mode ? `<div class="banner banner-survival">🛡️ SURVIVAL MODE ACTIVE</div>` : ''}
-                    ${data.tx_hash ? `<div class="tx-badge"><a href="https://base-sepolia-testnet-explorer.skalenodes.com:10032/tx/${data.tx_hash}" target="_blank">TX: ${data.tx_hash.substring(0, 14)}...</a></div>` : ''}
+                resultDiv.className = 'show';
+                resultDiv.innerHTML = `
+                    <strong>✅ Epoch ${data.step} completed</strong><br>
+                    NAV: ${data.nav} € | Decision: ${data.decision.replace('_', ' ')}<br>
+                    ${data.tx_hash ? `TX: <a href="https://base-sepolia-testnet-explorer.skalenodes.com:10032/tx/${data.tx_hash}" target="_blank">${data.tx_hash.substring(0, 12)}...</a>` : ''}
                 `;
 
-                setTimeout(() => { location.reload(); }, 1800);
+                // Reload page to update dashboard
+                setTimeout(() => {
+                    location.reload();
+                }, 1200);
+
             } catch (error) {
-                resDiv.innerHTML = `<p style="color: #ff5252;">❌ Error: ${error.message}</p>`;
+                resultDiv.className = 'show';
+                resultDiv.innerHTML = `<strong>❌ Error:</strong> ${error.message}`;
                 btn.disabled = false;
-                btn.innerHTML = '▶ Run Capital Epoch';
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '▶ Run Capital Epoch';
+                btn.textContent = '▶ Run Epoch';
             }
         }
 
+        // Run Cinematic Demo
         async function runCinematicDemo() {
             const btn = document.getElementById('cinBtn');
-            const resDiv = document.getElementById('result');
-            const risk = parseFloat(slider.value);
-
+            const resultDiv = document.getElementById('result');
             btn.disabled = true;
-            btn.innerHTML = '🎬 Running...';
-            resDiv.innerHTML = `<p style="color:#bfffe6;">🎬 Executing storyboard (growth → premium → shock → recovery → redeploy)...</p>`;
+            btn.textContent = '🎬 Running...';
 
             try {
-                const res = await fetch('/storyboard/demo_run', {
+                const risk = slider.value;
+                const response = await fetch('/cinematic/run', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ risk_tolerance: risk })
+                    body: JSON.stringify({ risk_tolerance: parseFloat(risk) })
                 });
-                const data = await res.json();
 
-                if (data.status === 'ok') {
-                    const last = data.final;
-                    resDiv.innerHTML = `
-                        <p style="color: #00e676; font-weight: bold;">✅ Cinematic Demo Completed</p>
-                        <p>Final NAV: ${last.nav.toFixed(4)} € | Drawdown: ${(last.drawdown * 100).toFixed(2)}%</p>
-                        <p>Premium used: ${last.used_premium} | Net Edge: ${last.net_edge}€</p>
-                        <p>Last Decision: <strong>${last.decision.replace('_',' ')}</strong></p>
-                        ${last.tx_hash ? `<div class="tx-badge"><a href="https://base-sepolia-testnet-explorer.skalenodes.com:10032/tx/${last.tx_hash}" target="_blank">TX: ${last.tx_hash.substring(0, 14)}...</a></div>` : ''}
-                        <p style="color:#aaa;margin-top:10px;">Reloading dashboard...</p>
-                    `;
-                    setTimeout(() => { location.reload(); }, 2000);
-                } else {
-                    resDiv.innerHTML = `<p style="color: #ff5252;">❌ Demo failed</p>`;
-                }
+                const data = await response.json();
+
+                resultDiv.className = 'show';
+                resultDiv.innerHTML = `
+                    <strong>🎬 Cinematic demo completed</strong><br>
+                    ${data.summary.nav_start} € → ${data.summary.nav_end} €<br>
+                    Premium epochs: ${data.summary.premium_epochs}<br>
+                    Blackouts avoided: ${data.summary.blackout_avoided}<br>
+                    Final decision: ${data.summary.final_decision}
+                `;
+
+                // Reload page to update dashboard
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
 
             } catch (error) {
-                resDiv.innerHTML = `<p style="color: #ff5252;">❌ Network error: ${error.message}</p>`;
-            } finally {
+                resultDiv.className = 'show';
+                resultDiv.innerHTML = `<strong>❌ Error:</strong> ${error.message}`;
                 btn.disabled = false;
-                btn.innerHTML = '🎬 Run Cinematic Demo';
+                btn.textContent = '🎬 Cinematic';
             }
         }
 
+        // Run SKALE Demo
         async function runDemo() {
             const btn = document.getElementById('demoBtn');
-            const resDiv = document.getElementById('result');
-
+            const resultDiv = document.getElementById('result');
             btn.disabled = true;
-            btn.innerHTML = '⏳ Settling...';
-            resDiv.innerHTML = '';
+            btn.textContent = '🚀 Sending...';
 
             try {
-                const res = await fetch('/demo', { method: 'POST' });
-                const data = await res.json();
+                const response = await fetch('/demo', { method: 'POST' });
+                const data = await response.json();
 
+                resultDiv.className = 'show';
                 if (data.status === 'success') {
-                    resDiv.innerHTML = `
-                        <p style="color: #00e676; font-weight: bold;">${data.message}</p>
-                        <p style="font-size: 0.95em; margin: 10px 0;"><b>Settlement TX:</b> ${data.tx_hash.substring(0, 18)}...</p>
-                        <a href="${data.explorer}" target="_blank" style="display: inline-block; margin-top: 12px; padding: 10px 20px; background: linear-gradient(90deg, #6a11cb, #2575fc); color: white; border-radius: 10px; text-decoration: none; font-weight: bold;">
-                            🔍 View SKALE Settlement
-                        </a>
+                    resultDiv.innerHTML = `
+                        <strong>✅ ${data.message}</strong><br>
+                        TX: <a href="${data.explorer}" target="_blank">${data.tx_hash.substring(0, 12)}...</a>
                     `;
                 } else {
-                    resDiv.innerHTML = `<p style="color: #ff5252;">${data.message}</p>`;
+                    resultDiv.innerHTML = `<strong>❌ ${data.message}</strong>`;
                 }
+
+                // Reload page to update dashboard
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+
             } catch (error) {
-                resDiv.innerHTML = `<p style="color: #ff5252;">❌ Network error: ${error.message}</p>`;
-            } finally {
+                resultDiv.className = 'show';
+                resultDiv.innerHTML = `<strong>❌ Error:</strong> ${error.message}`;
                 btn.disabled = false;
-                btn.innerHTML = '🚀 SKALE Settlement Demo';
+                btn.textContent = '🚀 SKALE Settlement Demo';
             }
         }
+
+        // Chart.js initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            const navHistory = {{ nav_history_json|safe }};
+            
+            if (navHistory.length > 0) {
+                const ctx = document.getElementById('navChart').getContext('2d');
+                
+                const steps = navHistory.map(e => e.step);
+                const navs = navHistory.map(e => e.nav);
+                const hwms = navHistory.map(e => e.hwm);
+                const drawdowns = navHistory.map(e => e.drawdown * 100);
+                
+                // Find deployment steps
+                const deploySteps = navHistory
+                    .filter(e => e.decision === 'deploy_capital')
+                    .map(e => e.step);
+                
+                // Colors based on regime
+                const colors = navHistory.map(e => {
+                    if (e.regime === 'CRISIS') return 'rgba(255, 23, 68, 0.8)';
+                    if (e.regime === 'STRESS') return 'rgba(255, 193, 7, 0.8)';
+                    return 'rgba(0, 230, 118, 0.8)';
+                });
+                
+                // Point styles: triangle for deployments, circle otherwise
+                const pointStyles = navHistory.map(e => 
+                    e.decision === 'deploy_capital' ? 'triangle' : 'circle'
+                );
+                
+                // Point sizes: bigger for deployments
+                const pointSizes = navHistory.map(e => 
+                    e.decision === 'deploy_capital' ? 10 : 6
+                );
+                
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: steps,
+                        datasets: [
+                            {
+                                label: 'NAV',
+                                data: navs,
+                                borderColor: 'rgb(106, 17, 203)',
+                                backgroundColor: 'rgba(106, 17, 203, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.3,
+                                pointBackgroundColor: colors,
+                                pointBorderColor: colors,
+                                pointRadius: pointSizes,
+                                pointHoverRadius: 12,
+                                pointStyle: pointStyles
+                            },
+                            {
+                                label: 'High Water Mark',
+                                data: hwms,
+                                borderColor: 'rgba(0, 230, 118, 0.7)',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                fill: false,
+                                tension: 0.3,
+                                pointRadius: 0
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    afterLabel: function(context) {
+                                        const epoch = navHistory[context.dataIndex];
+                                        let extra = `\nRegime: ${epoch.regime}`;
+                                        extra += `\nDecision: ${epoch.decision.replace('_', ' ')}`;
+                                        if (epoch.crisis && !epoch.crisis.includes('✅')) {
+                                            extra += `\nCrisis: ${epoch.crisis}`;
+                                        }
+                                        if (epoch.used_premium) {
+                                            extra += `\nInfo: PREMIUM (Net Edge: ${epoch.net_edge}€)`;
+                                        }
+                                        return extra;
+                                    }
+                                }
+                            },
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    color: '#fff',
+                                    padding: 20,
+                                    font: {
+                                        size: 13
+                                    }
+                                }
+                            },
+                            annotation: {
+                                annotations: deploySteps.reduce((acc, step, idx) => {
+                                    acc[`deploy-${idx}`] = {
+                                        type: 'line',
+                                        xMin: step,
+                                        xMax: step,
+                                        borderColor: 'rgba(255, 23, 68, 0.5)',
+                                        borderWidth: 2,
+                                        borderDash: [5, 5],
+                                        label: {
+                                            content: 'Deploy',
+                                            enabled: true,
+                                            position: 'top'
+                                        }
+                                    };
+                                    return acc;
+                                }, {})
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Epoch',
+                                    color: '#aaa'
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.05)'
+                                },
+                                ticks: {
+                                    color: '#aaa'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Value (€)',
+                                    color: '#aaa'
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.05)'
+                                },
+                                ticks: {
+                                    color: '#aaa'
+                                },
+                                beginAtZero: false
+                            }
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        }
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
