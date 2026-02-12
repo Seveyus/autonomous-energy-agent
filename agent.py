@@ -15,16 +15,15 @@ CRISIS_EVENTS = [
         "type": "price_crash",
         "message": "📉 Market Collapse: Energy price -90%",
         "price_drop": 0.90,
-        "asset_impact": 0.78,  # plus violent => drawdown visible
+        "asset_impact": 0.78,
         "cash_penalty": 0.0
     },
     {
         "type": "grid_failure",
-        "message": "⚡ Grid Blackout: Critical penalties (-1.50€)",
+        "message": "⚡ Grid Blackout: Critical penalties (-4.00€)",
         "production_drop": 0.30,
         "asset_impact": 0.88,
         "cash_penalty": 4.00
-
     }
 ]
 
@@ -42,6 +41,26 @@ def detect_crisis(force: str | None = None):
     return None
 
 
+def should_buy_premium_signal(
+    cash: float,
+    premium_cost: float,
+    evpi: float,
+    risk_tolerance: float,
+    min_cash_buffer: float = 0.30
+) -> bool:
+    """
+    Décision d'achat d'information:
+    - On achète si EVPI > coût * marge de sécurité.
+    - Plus risk_tolerance est haut, plus on accepte des bets.
+    """
+    if cash < (premium_cost + min_cash_buffer):
+        return False
+
+    # marge de sécurité: risk_tolerance haut -> marge plus faible
+    safety = 1.25 - (0.35 * risk_tolerance)  # rt=0.7 => ~1.005 ; rt=0.2 => ~1.18
+    return evpi > premium_cost * safety
+
+
 def investment_policy(
     cash: float,
     drawdown: float,
@@ -56,23 +75,19 @@ def investment_policy(
     - Hors crise: investir si cash buffer ok et ROI projeté ok
     """
 
-    # Hard survival: si drawdown > 30% => stop quoi qu’il arrive
     if drawdown < -0.30:
         return "hold_cash"
 
-    # En crise, on ne freeze pas forcément:
     if crisis_active:
-        # Contrarian mode: seulement si risk élevé + drawdown significatif + cash suffisant
         if risk_tolerance >= 0.7 and drawdown < -0.12 and cash >= (min_cash_buffer + 0.5):
             return "deploy_capital"
         return "hold_cash"
 
-    # hors crise
     if cash < min_cash_buffer:
         return "hold_cash"
 
     projected_roi = random.uniform(-0.10, 0.25)
-    threshold = 0.02 - (0.04 * risk_tolerance)  # rt=0.7 => ~ -0.008
+    threshold = 0.02 - (0.04 * risk_tolerance)
 
     if projected_roi > threshold:
         return "deploy_capital"

@@ -5,53 +5,50 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Segoe UI', Arial, sans-serif; 
-            background: #0a0a1a; 
-            color: #e0e0ff; 
-            padding: 20px; 
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0a0a1a;
+            color: #e0e0ff;
+            padding: 20px;
         }
         .container { max-width: 1400px; margin: 0 auto; }
         .header { text-align: center; margin-bottom: 30px; padding: 25px; border-bottom: 1px solid rgba(106, 17, 203, 0.3); }
-        .header h1 { 
-            font-size: 2.8em; 
-            margin-bottom: 10px; 
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 10px;
             background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        .header .subtitle { 
-            color: #aaa; 
-            font-size: 1.3em; 
-            max-width: 800px; 
-            margin: 0 auto; 
+        .header .subtitle {
+            color: #aaa;
+            font-size: 1.3em;
+            max-width: 800px;
+            margin: 0 auto;
             line-height: 1.6;
         }
         .header .subtitle span { color: #00ff99; font-weight: bold; }
 
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-bottom: 25px; }
-        .card { 
-            background: linear-gradient(145deg, #111122, #0f0f1a); 
-            padding: 28px; 
-            border-radius: 16px; 
-            box-shadow: 0 10px 30px rgba(0, 20, 40, 0.5); 
-            border: 1px solid rgba(106, 17, 203, 0.3); 
+        .card {
+            background: linear-gradient(145deg, #111122, #0f0f1a);
+            padding: 28px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 20, 40, 0.5);
+            border: 1px solid rgba(106, 17, 203, 0.3);
         }
-        .card h2 { 
-            font-size: 1.6em; 
-            margin-bottom: 20px; 
-            color: #6a11cb; 
+        .card h2 {
+            font-size: 1.6em;
+            margin-bottom: 20px;
+            color: #6a11cb;
         }
 
         .metric { font-size: 2.4em; font-weight: bold; margin: 15px 0; background: linear-gradient(90deg, #6a11cb, #2575fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .metric.smaller { font-size: 1.8em; }
-        .metric.positive { color: #00ff99; }
-        .metric.negative { color: #ff5252; }
 
-        /* --- Correction des Bannières et Badges --- */
-        .regime-badge { 
+        .regime-badge {
             display: inline-block;
-            padding: 4px 12px; 
+            padding: 4px 12px;
             margin-left: 8px;
             font-weight: bold;
             font-size: 0.85em;
@@ -63,92 +60,125 @@
         .regime-stress { background: rgba(255, 153, 0, 0.2); border: 1px solid #ff9100; color: #ffb74d; }
         .regime-normal { background: rgba(0, 230, 118, 0.15); border: 1px solid #00e676; color: #81c784; }
 
-        .crisis-banner, .survival-banner { 
-            padding: 12px; 
-            border-radius: 8px; 
-            margin-top: 15px; 
+        .banner {
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
             font-weight: bold;
             font-size: 0.95em;
             border-left: 4px solid;
         }
-        .crisis-banner { 
-            background: rgba(255, 87, 34, 0.15); 
-            border-left-color: #ff5722; 
+        .banner-crisis {
+            background: rgba(255, 87, 34, 0.15);
+            border-left-color: #ff5722;
             color: #ff9e80;
         }
-        .survival-banner { 
-            background: rgba(255, 165, 0, 0.15); 
-            border-left-color: #ffa500; 
+        .banner-stable {
+            background: rgba(0, 230, 118, 0.10);
+            border-left-color: #00e676;
+            color: #9affd1;
+        }
+        .banner-survival {
+            background: rgba(255, 165, 0, 0.15);
+            border-left-color: #ffa500;
             color: #ffb74d;
         }
-        /* ------------------------------------------ */
+
+        .info-panel {
+            margin-top: 14px;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 153, 0.25);
+            background: rgba(0, 255, 153, 0.06);
+            color: #bfffe6;
+            font-size: 0.95em;
+            line-height: 1.7;
+        }
+        .info-panel b { color: #00ff99; }
+        .info-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-weight: bold;
+            font-size: 0.85em;
+            margin-left: 6px;
+            border: 1px solid rgba(0, 255, 153, 0.3);
+            background: rgba(0, 255, 153, 0.10);
+            color: #00ff99;
+        }
 
         .slider-container { margin: 25px 0; }
         .slider-label { display: flex; justify-content: space-between; margin-bottom: 12px; font-weight: bold; }
-        input[type="range"] { 
-            width: 100%; 
-            height: 10px; 
-            border-radius: 5px; 
-            background: linear-gradient(90deg, #ff1744 0%, #ff9100 50%, #00e676 100%); 
-            outline: none; 
-            -webkit-appearance: none; 
+        input[type="range"] {
+            width: 100%;
+            height: 10px;
+            border-radius: 5px;
+            background: linear-gradient(90deg, #ff1744 0%, #ff9100 50%, #00e676 100%);
+            outline: none;
+            -webkit-appearance: none;
         }
-        input[type="range"]::-webkit-slider-thumb { 
-            -webkit-appearance: none; 
-            width: 28px; 
-            height: 28px; 
-            border-radius: 50%; 
-            background: white; 
-            cursor: pointer; 
-            box-shadow: 0 0 12px rgba(255, 255, 255, 0.8); 
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
         }
 
-        button { 
-            background: linear-gradient(90deg, #6a11cb, #2575fc); 
-            border: none; 
-            padding: 16px 40px; 
-            color: white; 
-            font-weight: bold; 
-            font-size: 1.2em; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            margin: 12px 5px; 
-            transition: all 0.3s; 
-            box-shadow: 0 6px 20px rgba(106, 17, 203, 0.4); 
+        button {
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+            border: none;
+            padding: 16px 40px;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2em;
+            border-radius: 12px;
+            cursor: pointer;
+            margin: 12px 5px;
+            transition: all 0.3s;
+            box-shadow: 0 6px 20px rgba(106, 17, 203, 0.4);
         }
         button:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(106, 17, 203, 0.6); }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        .tx-badge { 
-            display: inline-block; 
-            background: rgba(106, 17, 203, 0.15); 
-            padding: 10px 18px; 
-            border-radius: 8px; 
-            font-family: monospace; 
-            font-size: 0.9em; 
-            margin-top: 12px; 
-            word-break: break-all; 
+        .btn-secondary {
+            background: linear-gradient(90deg, #00c853, #00e676);
+            box-shadow: 0 6px 20px rgba(0, 230, 118, 0.25);
+        }
+        .btn-secondary:hover { box-shadow: 0 8px 25px rgba(0, 230, 118, 0.35); }
+
+        .tx-badge {
+            display: inline-block;
+            background: rgba(106, 17, 203, 0.15);
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9em;
+            margin-top: 12px;
+            word-break: break-all;
             border: 1px solid rgba(106, 17, 203, 0.3);
         }
         .tx-badge a { color: #6a11cb; text-decoration: none; font-weight: bold; }
 
         .chart-container { position: relative; height: 380px; margin-top: 20px; }
-        .asset-item { 
-            padding: 12px; 
-            margin: 8px 0; 
-            background: rgba(106, 17, 203, 0.08); 
-            border-radius: 10px; 
-            border-left: 4px solid #6a11cb; 
+        .asset-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: rgba(106, 17, 203, 0.08);
+            border-radius: 10px;
+            border-left: 4px solid #6a11cb;
         }
         .asset-item.solar { border-left-color: #ff9100; background: rgba(255, 145, 0, 0.08); }
 
-        .philosophy { 
-            background: rgba(0, 20, 40, 0.6); 
-            border-left: 4px solid #6a11cb; 
-            padding: 20px; 
-            border-radius: 0 12px 12px 0; 
-            margin: 25px 0; 
-            font-style: italic; 
+        .philosophy {
+            background: rgba(0, 20, 40, 0.6);
+            border-left: 4px solid #6a11cb;
+            padding: 20px;
+            border-radius: 0 12px 12px 0;
+            margin: 25px 0;
+            font-style: italic;
             line-height: 1.7;
         }
     </style>
@@ -166,15 +196,39 @@
                 <div class="metric">{{ current_nav }} €</div>
                 <div style="color: #aaa; font-size: 1.05em; line-height: 1.8;">
                     High Water Mark: {{ max_nav }} €<br>
-                    Drawdown: <span style="font-weight:bold" class="{% if last_epoch.drawdown < 0 %}negative{% else %}positive{% endif %}">{{ "%.2f"|format(last_epoch.drawdown * 100) }}%</span><br>
+                    Drawdown: <span style="font-weight:bold;">{{ "%.2f"|format(last_epoch.drawdown * 100) }}%</span><br>
                     Regime: <span class="regime-badge {% if last_epoch.regime == 'CRISIS' %}regime-crisis{% elif last_epoch.regime == 'STRESS' %}regime-stress{% else %}regime-normal{% endif %}">{{ last_epoch.regime }}</span>
                 </div>
-                
+
+                <div class="info-panel">
+                    <div>
+                        Info Market:
+                        {% if last_epoch.used_premium %}
+                        <span class="info-badge">PREMIUM USED</span>
+                        {% else %}
+                        <span class="info-badge" style="color:#bfffe6;border-color:rgba(191,255,230,0.3);background:rgba(191,255,230,0.08);">FREE FORECAST</span>
+                        {% endif %}
+                    </div>
+                    <div><b>EVPI</b>: {{ last_epoch.evpi }} € | <b>Cost</b>: {{ last_epoch.info_spend }} €</div>
+                    <div><b>Net Edge</b>: {{ last_epoch.net_edge }} €</div>
+                    <div><b>Total Info Spend</b>: {{ last_epoch.info_spend_total }} €</div>
+                    {% if last_epoch.premium_tx %}
+                    <div style="margin-top:8px; font-family: monospace; font-size:0.9em;">
+                        premium_tx: {{ last_epoch.premium_tx[:18] }}...
+                    </div>
+                    {% endif %}
+                </div>
+
                 {% if last_epoch.crisis %}
-                <div class="crisis-banner">⚠️ {{ last_epoch.crisis }}</div>
+                    {% if last_epoch.crisis.startswith("✅") %}
+                        <div class="banner banner-stable">✅ Stable Operations</div>
+                    {% else %}
+                        <div class="banner banner-crisis">⚠️ {{ last_epoch.crisis }}</div>
+                    {% endif %}
                 {% endif %}
+
                 {% if last_epoch.survival_mode %}
-                <div class="survival-banner">🛡️ SURVIVAL MODE ACTIVE — Capital preservation priority</div>
+                <div class="banner banner-survival">🛡️ SURVIVAL MODE ACTIVE — Capital preservation priority</div>
                 {% endif %}
             </div>
 
@@ -216,6 +270,7 @@
                 <div class="philosophy">
                     "Optimizing for <strong>long-term capital growth under uncertainty</strong> — not short-term profit maximization."
                 </div>
+
                 <div class="slider-container">
                     <div class="slider-label">
                         <span>Risk Tolerance</span>
@@ -223,15 +278,16 @@
                     </div>
                     <input type="range" min="0" max="1" step="0.1" value="0.7" id="riskSlider">
                     <p style="color: #aaa; font-size: 0.9em; margin-top: 10px;">
-                        <span style="color: #ff1744;">← Capital Preservation</span> | 
+                        <span style="color: #ff1744;">← Capital Preservation</span> |
                         <span style="color: #00e676;">Growth →</span>
                     </p>
                 </div>
 
                 <button onclick="runEpoch()" id="runBtn">▶ Run Capital Epoch</button>
+                <button onclick="runCinematicDemo()" id="cinBtn" class="btn-secondary">🎬 Run Cinematic Demo</button>
                 <button onclick="runDemo()" id="demoBtn">🚀 SKALE Settlement Demo</button>
 
-                <div id="result" style="margin-top: 20px; min-height: 80px;"></div>
+                <div id="result" style="margin-top: 20px; min-height: 140px;"></div>
             </div>
 
             <div class="card">
@@ -244,7 +300,6 @@
     </div>
 
     <script>
-        // ... (Le script reste identique car j'ai gardé les mêmes IDs et classes de base) ...
         const navData = {{ nav_history_json | safe }};
 
         if (navData.length > 0) {
@@ -300,33 +355,68 @@
                 });
                 const data = await res.json();
 
-                let crisisHtml = '';
-                if (data.crisis) {
-                    crisisHtml = `<div class="crisis-banner">⚠️ \${data.crisis}</div>`;
-                }
-                if (data.survival_mode) {
-                    crisisHtml += `<div class="survival-banner">🛡️ SURVIVAL MODE ACTIVE</div>`;
-                }
-
-                let regimeClass = 'regime-normal';
-                if (data.regime === 'CRISIS') regimeClass = 'regime-crisis';
-                else if (data.regime === 'STRESS') regimeClass = 'regime-stress';
-                let regimeBadge = `<span class="regime-badge \${regimeClass}">\${data.regime}</span>`;
+                const dd = (data.drawdown * 100).toFixed(2);
+                const stable = (data.crisis && data.crisis.startsWith("✅"));
 
                 resDiv.innerHTML = `
-                    <p style="color: #00e676; font-weight: bold;">✅ Epoch \${data.step} completed</p>
-                    <p>NAV: \${data.nav.toFixed(4)} € | Drawdown: \${(data.drawdown * 100).toFixed(2)}%</p>
-                    <p>Decision: <strong>\${data.decision.replace('_', ' ')}</strong></p>
-                    <p>Current Regime: \${regimeBadge}</p>
-                    \${crisisHtml}
-                    \${data.tx_hash ? \`<div class="tx-badge"><a href="https://base-sepolia-testnet-explorer.skalenodes.com:10032/tx/\${data.tx_hash}" target="_blank">TX: \${data.tx_hash.substring(0, 14)}...</a></div>\` : ''}
+                    <p style="color: #00e676; font-weight: bold;">✅ Epoch ${data.step} completed</p>
+                    <p>NAV: ${data.nav.toFixed(4)} € | HWM: ${data.hwm.toFixed(4)} € | Drawdown: ${dd}%</p>
+                    <p>Decision: <strong>${data.decision.replace('_', ' ')}</strong></p>
+                    <p>Info: premium=${data.used_premium} | EVPI=${data.evpi}€ | cost=${data.info_spend}€ | net_edge=${data.net_edge}€</p>
+                    ${data.premium_tx ? `<p style="font-family:monospace;font-size:0.9em;">premium_tx: ${data.premium_tx.substring(0, 18)}...</p>` : ''}
+                    <div class="banner ${stable ? 'banner-stable' : 'banner-crisis'}">${stable ? '✅ Stable Operations' : '⚠️ ' + data.crisis}</div>
+                    ${data.survival_mode ? `<div class="banner banner-survival">🛡️ SURVIVAL MODE ACTIVE</div>` : ''}
+                    ${data.tx_hash ? `<div class="tx-badge"><a href="https://base-sepolia-testnet-explorer.skalenodes.com:10032/tx/${data.tx_hash}" target="_blank">TX: ${data.tx_hash.substring(0, 14)}...</a></div>` : ''}
                 `;
 
-                setTimeout(() => { location.reload(); }, 2500);
+                setTimeout(() => { location.reload(); }, 1800);
             } catch (error) {
-                resDiv.innerHTML = `<p style="color: #ff5252;">❌ Error: \${error.message}</p>`;
+                resDiv.innerHTML = `<p style="color: #ff5252;">❌ Error: ${error.message}</p>`;
                 btn.disabled = false;
                 btn.innerHTML = '▶ Run Capital Epoch';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '▶ Run Capital Epoch';
+            }
+        }
+
+        async function runCinematicDemo() {
+            const btn = document.getElementById('cinBtn');
+            const resDiv = document.getElementById('result');
+            const risk = parseFloat(slider.value);
+
+            btn.disabled = true;
+            btn.innerHTML = '🎬 Running...';
+            resDiv.innerHTML = `<p style="color:#bfffe6;">🎬 Executing storyboard (growth → premium → shock → recovery → redeploy)...</p>`;
+
+            try {
+                const res = await fetch('/storyboard/demo_run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ risk_tolerance: risk })
+                });
+                const data = await res.json();
+
+                if (data.status === 'ok') {
+                    const last = data.final;
+                    resDiv.innerHTML = `
+                        <p style="color: #00e676; font-weight: bold;">✅ Cinematic Demo Completed</p>
+                        <p>Final NAV: ${last.nav.toFixed(4)} € | Drawdown: ${(last.drawdown * 100).toFixed(2)}%</p>
+                        <p>Premium used: ${last.used_premium} | Net Edge: ${last.net_edge}€</p>
+                        <p>Last Decision: <strong>${last.decision.replace('_',' ')}</strong></p>
+                        ${last.tx_hash ? `<div class="tx-badge"><a href="https://base-sepolia-testnet-explorer.skalenodes.com:10032/tx/${last.tx_hash}" target="_blank">TX: ${last.tx_hash.substring(0, 14)}...</a></div>` : ''}
+                        <p style="color:#aaa;margin-top:10px;">Reloading dashboard...</p>
+                    `;
+                    setTimeout(() => { location.reload(); }, 2000);
+                } else {
+                    resDiv.innerHTML = `<p style="color: #ff5252;">❌ Demo failed</p>`;
+                }
+
+            } catch (error) {
+                resDiv.innerHTML = `<p style="color: #ff5252;">❌ Network error: ${error.message}</p>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🎬 Run Cinematic Demo';
             }
         }
 
@@ -344,17 +434,17 @@
 
                 if (data.status === 'success') {
                     resDiv.innerHTML = `
-                        <p style="color: #00e676; font-weight: bold;">\${data.message}</p>
-                        <p style="font-size: 0.95em; margin: 10px 0;"><b>Settlement TX:</b> \${data.tx_hash.substring(0, 18)}...</p>
-                        <a href="\${data.explorer}" target="_blank" style="display: inline-block; margin-top: 12px; padding: 10px 20px; background: linear-gradient(90deg, #6a11cb, #2575fc); color: white; border-radius: 10px; text-decoration: none; font-weight: bold;">
+                        <p style="color: #00e676; font-weight: bold;">${data.message}</p>
+                        <p style="font-size: 0.95em; margin: 10px 0;"><b>Settlement TX:</b> ${data.tx_hash.substring(0, 18)}...</p>
+                        <a href="${data.explorer}" target="_blank" style="display: inline-block; margin-top: 12px; padding: 10px 20px; background: linear-gradient(90deg, #6a11cb, #2575fc); color: white; border-radius: 10px; text-decoration: none; font-weight: bold;">
                             🔍 View SKALE Settlement
                         </a>
                     `;
                 } else {
-                    resDiv.innerHTML = `<p style="color: #ff5252;">\${data.message}</p>`;
+                    resDiv.innerHTML = `<p style="color: #ff5252;">${data.message}</p>`;
                 }
             } catch (error) {
-                resDiv.innerHTML = `<p style="color: #ff5252;">❌ Network error: \${error.message}</p>`;
+                resDiv.innerHTML = `<p style="color: #ff5252;">❌ Network error: ${error.message}</p>`;
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '🚀 SKALE Settlement Demo';
