@@ -1,4 +1,7 @@
 fastapi
-uvicorn
-numpy
+uvicorn[standard]
+gunicorn
+jinja2
+web3
 requests
+python-dotenv
