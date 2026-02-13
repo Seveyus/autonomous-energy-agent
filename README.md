@@ -9,7 +9,7 @@
 ## 🌐 Live Demo
 
 🔗 **Cloud Run Deployment**:  
-https://autonomous-energy-agent-xxx.a.run.app/dashboard
+[https://autonomous-energy-agent-xxx.a.run.app/dashboard](https://autonomous-energy-agent-1046541435067.europe-west1.run.app/dashboard)
 
 *(Deployed on Google Cloud Run — containerized FastAPI + SKALE integration)*
 
