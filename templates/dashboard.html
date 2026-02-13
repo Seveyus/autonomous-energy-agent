@@ -537,8 +537,8 @@
                 </div>
 
                 <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                    <button onclick="runEpoch()" id="runBtn" style="flex:1;">▶ Run Epoch</button>
-                    <button onclick="runCinematicDemo()" id="cinBtn" class="btn-secondary" style="flex:1;">🎬 Cinematic</button>
+                    <button onclick="runEpoch()" id="runBtn" style="flex:1;">▶ Run Capital Epoch</button>
+                    <button onclick="runCinematicStream()" id="cinBtn" class="btn-secondary" style="flex:1;">🎬 Run Cinematic Demo</button>
                 </div>
                 <button onclick="runDemo()" id="demoBtn" style="width:100%; margin-left:0; margin-right:0;">🚀 SKALE Settlement Demo</button>
 
@@ -694,6 +694,209 @@
                 resultDiv.innerHTML = `<strong>❌ Error:</strong> ${error.message}`;
                 btn.disabled = false;
                 btn.textContent = '🚀 SKALE Settlement Demo';
+            }
+        }
+        
+
+        // ✅ Graphique dynamique pendant la cinématique
+        let cinematicChart = null;
+        let cinematicChartCtx = null;
+
+        function initCinematicChart() {
+            const canvas = document.getElementById('navChart');
+            if (!canvas) return;
+            
+            cinematicChartCtx = canvas.getContext('2d');
+            
+            // Si un chart existe déjà, détruis-le proprement
+            if (cinematicChart) {
+                cinematicChart.destroy();
+            }
+            
+            // Création du chart vide (prêt à être mis à jour)
+            cinematicChart = new Chart(cinematicChartCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'NAV',
+                            data: [],
+                            borderColor: 'rgb(106, 17, 203)',
+                            backgroundColor: 'rgba(106, 17, 203, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 6,
+                            pointHoverRadius: 10
+                        },
+                        {
+                            label: 'High Water Mark',
+                            data: [],
+                            borderColor: 'rgba(0, 230, 118, 0.7)',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.3,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#fff',
+                                padding: 20,
+                                font: { size: 13 }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Epoch', color: '#aaa' },
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#aaa' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Value (€)', color: '#aaa' },
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#aaa' },
+                            beginAtZero: false
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+
+        // ✅ Mise à jour du graphique avec nouvelles données
+        function updateChartWithHistory(navHistory) {
+            if (!cinematicChart) return;
+            
+            const steps = navHistory.map(e => e.step);
+            const navs = navHistory.map(e => e.nav);
+            const hwms = navHistory.map(e => e.hwm);
+            
+            cinematicChart.data.labels = steps;
+            cinematicChart.data.datasets[0].data = navs;
+            cinematicChart.data.datasets[1].data = hwms;
+            
+            // Couleurs dynamiques selon le régime
+            const colors = navHistory.map(e => {
+                if (e.regime === 'CRISIS') return 'rgba(255, 23, 68, 0.8)';
+                if (e.regime === 'STRESS') return 'rgba(255, 193, 7, 0.8)';
+                return 'rgba(0, 230, 118, 0.8)';
+            });
+            
+            cinematicChart.data.datasets[0].pointBackgroundColor = colors;
+            cinematicChart.data.datasets[0].pointBorderColor = colors;
+            
+            cinematicChart.update('active'); // Animation fluide
+        }
+
+
+        // ✅ Streaming SSE pour la cinématique
+        async function runCinematicStream() {
+            const btn = document.getElementById('cinBtn');
+            const resultDiv = document.getElementById('result');
+            
+            // Désactive les boutons
+            btn.disabled = true;
+            btn.textContent = '🎬 Streaming...';
+            document.getElementById('runBtn').disabled = true;
+            document.getElementById('demoBtn').disabled = true;
+            
+            // Cache le résultat précédent
+            resultDiv.className = '';
+            resultDiv.innerHTML = '';
+            
+            // ✅ Initialise le graphique vide
+            initCinematicChart();
+            
+            try {
+                const risk = document.getElementById('riskSlider').value;
+                const eventSource = new EventSource(`/cinematic/stream?risk_tolerance=${risk}`);
+                
+                eventSource.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    
+                    if (data.type === 'epoch') {
+                        // ✅ Mets à jour le graphique en temps réel
+                        if (data.chart_update && data.chart_update.nav_history) {
+                            updateChartWithHistory(data.chart_update.nav_history);
+                        }
+                        
+                        // Affiche l'étape dans le résultat
+                        resultDiv.className = 'show';
+                        resultDiv.innerHTML = `
+                            <strong>🎬 ${data.label}</strong><br>
+                            Step ${data.step} | NAV: ${data.nav}€ | Decision: ${data.decision.replace('_', ' ')}<br>
+                            ${data.crisis && !data.crisis.includes('✅') ? `⚠️ ${data.crisis}` : ''}
+                            ${data.used_premium ? `💎 Premium used (Net Edge: ${data.net_edge}€)` : ''}
+                        `;
+                    }
+                    
+                    if (data.type === 'status') {
+                        resultDiv.innerHTML += `<br><small>${data.message}</small>`;
+                    }
+                    
+                    if (data.type === 'settlement') {
+                        if (data.result.status === 'success') {
+                            resultDiv.innerHTML += `<br>✅ Settlement: ${data.result.tx_hash.substring(0, 12)}...`;
+                        }
+                    }
+                    
+                    if (data.type === 'summary') {
+                        // ✅ Dernière mise à jour du graphique avec tous les points
+                        if (data.chart_final && data.chart_final.nav_history) {
+                            updateChartWithHistory(data.chart_final.nav_history);
+                        }
+                        
+                        resultDiv.innerHTML = `
+                            <strong>🎬 Cinematic Complete!</strong><br>
+                            ${data.summary.nav_start}€ → ${data.summary.nav_end}€ (${data.summary.nav_delta > 0 ? '+' : ''}${data.summary.nav_delta}€)<br>
+                            Premium epochs: ${data.summary.premium_epochs}<br>
+                            Blackouts avoided: ${data.summary.blackout_avoided}<br>
+                            Final decision: ${data.summary.final_decision}
+                        `;
+                    }
+                    
+                    if (data.type === 'done') {
+                        eventSource.close();
+                        setTimeout(() => {
+                            btn.disabled = false;
+                            btn.textContent = '🎬 Run Cinematic Demo';
+                            document.getElementById('runBtn').disabled = false;
+                            document.getElementById('demoBtn').disabled = false;
+                        }, 1500);
+                    }
+                };
+                
+                eventSource.onerror = function(err) {
+                    console.error('EventSource failed:', err);
+                    resultDiv.className = 'show';
+                    resultDiv.innerHTML = '<strong>❌ Streaming error</strong>';
+                    eventSource.close();
+                    btn.disabled = false;
+                    btn.textContent = '🎬 Run Cinematic Demo';
+                    document.getElementById('runBtn').disabled = false;
+                    document.getElementById('demoBtn').disabled = false;
+                };
+                
+            } catch (error) {
+                resultDiv.className = 'show';
+                resultDiv.innerHTML = `<strong>❌ Error:</strong> ${error.message}`;
+                btn.disabled = false;
+                btn.textContent = '🎬 Run Cinematic Demo';
+                document.getElementById('runBtn').disabled = false;
+                document.getElementById('demoBtn').disabled = false;
             }
         }
 

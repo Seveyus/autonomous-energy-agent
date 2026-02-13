@@ -296,11 +296,19 @@ def cinematic_stream(risk_tolerance: float = 0.7):
             ("On-chain settlement + final state", {"force": None}),
         ]
 
-        # Stream each epoch
+        # Stream each epoch + graph update
         for label, cfg in steps:
             epoch = _run_epoch_internal(rt, force_crisis=cfg["force"])
             payload = _mk_story_event(label, epoch)
             payload["type"] = "epoch"
+            
+            # ✅ ENVOIE AUSSI LES DONNÉES DU GRAPHIQUE
+            payload["chart_update"] = {
+                "nav_history": portfolio["nav_history"][-10:],  # last 10 points for perf
+                "current_nav": payload["nav"],
+                "step": payload["step"]
+            }
+            
             yield sse(payload)
             await asyncio.sleep(0.15)
 
@@ -310,20 +318,27 @@ def cinematic_stream(risk_tolerance: float = 0.7):
         settle = run_demo()
         yield sse({"type": "settlement", "result": settle})
 
-        # Final summary
+        # Final summary (avec graph complet)
         story = portfolio["nav_history"]
-        # story ici est list d'epochs brute; on reconstruit une mini story lisible
         story_events = []
         for i, e in enumerate(story[-len(steps):], start=0):
             story_events.append(_mk_story_event(steps[i][0], e))
 
         summary = _compute_cinematic_summary(story_events)
-        yield sse({"type": "summary", "summary": summary})
+        
+        # ✅ ENVOIE LE GRAPHIQUE COMPLET À LA FIN
+        yield sse({
+            "type": "summary", 
+            "summary": summary,
+            "chart_final": {
+                "nav_history": portfolio["nav_history"],
+                "total_steps": len(portfolio["nav_history"])
+            }
+        })
 
         yield sse({"type": "done"})
 
     return StreamingResponse(event_gen(), media_type="text/event-stream")
-
 
 
 # ---------- Payment / x402 ----------
