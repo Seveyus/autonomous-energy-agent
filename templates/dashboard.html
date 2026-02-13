@@ -6,12 +6,7 @@
     <title>⚡ AI Energy Capital Entity — Control Room</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
@@ -19,12 +14,7 @@
             line-height: 1.6;
             padding: 20px;
         }
-
-        .container {
-            max-width: 1600px;
-            margin: 0 auto;
-        }
-
+        .container { max-width: 1600px; margin: 0 auto; }
         header {
             text-align: center;
             margin-bottom: 40px;
@@ -34,44 +24,29 @@
             border: 1px solid rgba(106, 17, 203, 0.4);
             box-shadow: 0 8px 32px rgba(106, 17, 203, 0.2);
         }
-
         h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
             background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
-
-        .subtitle {
-            color: #aaa;
-            font-size: 1.1em;
-            margin-top: 10px;
-        }
-
+        .subtitle { color: #aaa; font-size: 1.1em; margin-top: 10px; }
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 25px;
             margin-bottom: 25px;
         }
-
-        /* AJOUTE CECI : Une grille spéciale pour la ligne du bas */
         .grid-bottom {
             display: grid;
-            grid-template-columns: 1.2fr 2fr; /* Allocation prend 1 part, Graphique prend 2 parts */
+            grid-template-columns: 1.2fr 2fr;
             gap: 25px;
             margin-bottom: 25px;
         }
-
-        /* Responsive : sur mobile, on repasse en 1 seule colonne */
         @media (max-width: 1000px) {
-            .grid-bottom { 
-                grid-template-columns: 1fr; 
-            }
+            .grid-bottom { grid-template-columns: 1fr; }
         }
-
         .card {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
@@ -79,15 +54,9 @@
             padding: 25px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: transform 0.3s ease;
         }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(106, 17, 203, 0.4);
-            border-color: rgba(106, 17, 203, 0.5);
-        }
-
+        .card:hover { transform: translateY(-5px); box-shadow: 0 12px 40px rgba(106, 17, 203, 0.4); }
         h2 {
             font-size: 1.5em;
             margin-bottom: 20px;
@@ -96,7 +65,6 @@
             align-items: center;
             gap: 10px;
         }
-
         .metric {
             font-size: 2.5em;
             font-weight: bold;
@@ -104,16 +72,13 @@
             background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
-
         .metric-label {
             color: #aaa;
             font-size: 0.9em;
             display: block;
             margin-top: 5px;
         }
-
         .regime-badge {
             display: inline-block;
             padding: 5px 15px;
@@ -122,109 +87,21 @@
             font-weight: bold;
             margin-left: 10px;
         }
-
-        .regime-NORMAL {
-            background: rgba(0, 230, 118, 0.2);
-            color: #00e676;
-            border: 1px solid rgba(0, 230, 118, 0.4);
-        }
-
-        .regime-STRESS {
-            background: rgba(255, 193, 7, 0.2);
-            color: #ffc107;
-            border: 1px solid rgba(255, 193, 7, 0.4);
-        }
-
-        .regime-CRISIS {
-            background: rgba(255, 23, 68, 0.2);
-            color: #ff1744;
-            border: 1px solid rgba(255, 23, 68, 0.4);
-        }
-
-        .info-market {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 15px;
-            border-left: 4px solid #6a11cb;
-        }
-
-        .info-market h3 {
-            font-size: 1em;
-            margin-bottom: 10px;
-            color: #6a11cb;
-        }
-
-        .info-row {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 10px;
-        }
-
-        .info-item {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .info-value {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #6a11cb;
-        }
-
-        .crisis-alert {
-            background: rgba(255, 23, 68, 0.15);
-            border: 2px solid rgba(255, 23, 68, 0.5);
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 15px;
-            animation: pulse 2s infinite;
-        }
-
-        .survival-mode {
-            background: rgba(255, 82, 82, 0.15);
-            border: 2px solid rgba(255, 82, 82, 0.5);
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 15px;
-        }
-
-        @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0.4); }
-            50% { box-shadow: 0 0 0 10px rgba(255, 23, 68, 0); }
-        }
-
-        .assets-list {
-            margin-top: 15px;
-        }
-
-        .asset-item {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 12px;
-            margin-bottom: 8px;
-            border-radius: 8px;
-            font-size: 0.95em;
-        }
-
-        .asset-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .slider-container {
-            margin: 25px 0;
-        }
-
-        .slider-label {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-weight: bold;
-            color: #fff;
-        }
-
+        .regime-NORMAL { background: rgba(0, 230, 118, 0.2); color: #00e676; border: 1px solid rgba(0, 230, 118, 0.4); }
+        .regime-STRESS { background: rgba(255, 193, 7, 0.2); color: #ffc107; border: 1px solid rgba(255, 193, 7, 0.4); }
+        .regime-CRISIS { background: rgba(255, 23, 68, 0.2); color: #ff1744; border: 1px solid rgba(255, 23, 68, 0.4); }
+        .info-market { background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 10px; margin-top: 15px; border-left: 4px solid #6a11cb; }
+        .info-market h3 { font-size: 1em; margin-bottom: 10px; color: #6a11cb; }
+        .info-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 10px; }
+        .info-item { background: rgba(0, 0, 0, 0.2); padding: 10px; border-radius: 8px; text-align: center; }
+        .info-value { font-size: 1.2em; font-weight: bold; color: #6a11cb; }
+        .crisis-alert { background: rgba(255, 23, 68, 0.15); border: 2px solid rgba(255, 23, 68, 0.5); padding: 15px; border-radius: 10px; margin-top: 15px; animation: pulse 2s infinite; }
+        .survival-mode { background: rgba(255, 82, 82, 0.15); border: 2px solid rgba(255, 82, 82, 0.5); padding: 15px; border-radius: 10px; margin-top: 15px; }
+        @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0.4); } 50% { box-shadow: 0 0 0 10px rgba(255, 23, 68, 0); } }
+        .assets-list { margin-top: 15px; }
+        .asset-item { background: rgba(0, 0, 0, 0.2); padding: 12px; margin-bottom: 8px; border-radius: 8px; font-size: 0.95em; }
+        .slider-container { margin: 25px 0; }
+        .slider-label { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; }
         input[type="range"] {
             width: 100%;
             height: 8px;
@@ -232,12 +109,9 @@
             background: linear-gradient(90deg, #ff1744 0%, #6a11cb 50%, #00e676 100%);
             outline: none;
             -webkit-appearance: none;
-            appearance: none;
         }
-
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            appearance: none;
             width: 24px;
             height: 24px;
             border-radius: 50%;
@@ -245,7 +119,6 @@
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(106, 17, 203, 0.4);
         }
-
         .philosophy {
             background: rgba(0, 0, 0, 0.3);
             padding: 20px;
@@ -255,12 +128,6 @@
             line-height: 1.7;
             border-left: 4px solid #6a11cb;
         }
-
-        .philosophy strong {
-            color: #6a11cb;
-            font-weight: bold;
-        }
-
         button {
             background: linear-gradient(135deg, #6a11cb, #2575fc);
             color: white;
@@ -275,26 +142,9 @@
             box-shadow: 0 4px 15px rgba(106, 17, 203, 0.4);
             width: calc(50% - 10px);
         }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(106, 17, 203, 0.6);
-        }
-
-        button:active {
-            transform: translateY(1px);
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #00e676, #00c853);
-        }
-
+        button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(106, 17, 203, 0.6); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-secondary { background: linear-gradient(135deg, #00e676, #00c853); }
         #result {
             margin-top: 20px;
             min-height: 80px;
@@ -303,113 +153,19 @@
             border-radius: 10px;
             display: none;
         }
-
-        #result.show {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .chart-container {
-            position: relative;
-            height: 500px;
-            width: 100%;
-        }
-
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100px;
-            color: #6a11cb;
-            font-size: 1.2em;
-        }
-
-        .premium-badge {
-            background: linear-gradient(135deg, #ffd700, #ffaa00);
-            color: #000;
-            padding: 3px 10px;
-            border-radius: 15px;
-            font-weight: bold;
-            font-size: 0.85em;
-        }
-
-        .free-badge {
-            background: rgba(0, 230, 118, 0.2);
-            color: #00e676;
-            padding: 3px 10px;
-            border-radius: 15px;
-            font-weight: bold;
-            font-size: 0.85em;
-            border: 1px solid rgba(0, 230, 118, 0.4);
-        }
-
-        .tx-hash {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 0.85em;
-            margin-top: 10px;
-            word-break: break-all;
-        }
-
-        .tx-hash a {
-            color: #6a11cb;
-            text-decoration: none;
-        }
-
-        .tx-hash a:hover {
-            text-decoration: underline;
-        }
-
-        /* Un peu de style pour séparer la rationale des boutons */
-        .rationale-section {
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(106, 17, 203, 0.3);
-        }
-
-        .rationale-section h3 {
-            margin-bottom: 15px;
-            color: #6a11cb;
-        }
-
-        .rationale {
-            list-style: none;
-            padding: 0;
-        }
-
-        .rationale li {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 12px;
-            margin-bottom: 8px;
-            border-radius: 8px;
-            font-size: 0.95em;
-            line-height: 1.6;
-        }
-
-        .rationale li:last-child {
-            margin-bottom: 0;
-        }
-
-        .meta {
-            margin-top: 15px;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            font-size: 0.85em;
-            color: #aaa;
-        }
-
-        .meta small {
-            display: block;
-            line-height: 1.6;
-        }
+        #result.show { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .chart-container { position: relative; height: 500px; width: 100%; }
+        .premium-badge { background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; padding: 3px 10px; border-radius: 15px; font-weight: bold; font-size: 0.85em; }
+        .free-badge { background: rgba(0, 230, 118, 0.2); color: #00e676; padding: 3px 10px; border-radius: 15px; font-weight: bold; font-size: 0.85em; border: 1px solid rgba(0, 230, 118, 0.4); }
+        .tx-hash { background: rgba(0, 0, 0, 0.3); padding: 8px 12px; border-radius: 8px; font-family: monospace; font-size: 0.85em; margin-top: 10px; word-break: break-all; }
+        .tx-hash a { color: #6a11cb; text-decoration: none; }
+        .tx-hash a:hover { text-decoration: underline; }
+        .rationale-section { margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(106, 17, 203, 0.3); }
+        .rationale-section h3 { margin-bottom: 15px; color: #6a11cb; }
+        .rationale { list-style: none; padding: 0; }
+        .rationale li { background: rgba(0, 0, 0, 0.2); padding: 12px; margin-bottom: 8px; border-radius: 8px; font-size: 0.95em; line-height: 1.6; }
+        .meta { margin-top: 15px; padding: 10px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; font-size: 0.85em; color: #aaa; }
     </style>
 </head>
 <body>
@@ -420,18 +176,18 @@
         </header>
 
         <div class="grid">
-            <div class="card">
+            <div class="card" id="nav-card">
                 <h2>📊 Net Asset Value</h2>
-                <div class="metric">{{ current_nav }} €</div>
-                <span class="metric-label">High Water Mark: {{ max_nav }} €</span>
-                <span class="metric-label">Drawdown: {{ "%.2f"|format(last_epoch.drawdown * 100) }}%</span>
-                <span class="metric-label">
+                <div class="metric" id="nav-metric">{{ current_nav }} €</div>
+                <span class="metric-label" id="hwm-label">High Water Mark: {{ max_nav }} €</span>
+                <span class="metric-label" id="drawdown-label">Drawdown: {{ "%.2f"|format(last_epoch.drawdown * 100) }}%</span>
+                <span class="metric-label" id="regime-label">
                     Regime: {{ last_epoch.regime }}
                     <span class="regime-badge regime-{{ last_epoch.regime }}">{{ last_epoch.regime }}</span>
                 </span>
 
                 <div class="info-market">
-                    <h3>
+                    <h3 id="info-badge">
                         Info Market:
                         {% if last_epoch.used_premium %}
                             <span class="premium-badge">PREMIUM USED</span>
@@ -442,23 +198,23 @@
                     <div class="info-row">
                         <div class="info-item">
                             <div class="info-label">EVPI</div>
-                            <div class="info-value">{{ "%.4f"|format(last_epoch.evpi) }} €</div>
+                            <div class="info-value" id="evpi-value">{{ "%.4f"|format(last_epoch.evpi) }} €</div>
                         </div>
                         <div class="info-item">
                             <div class="info-label">Cost</div>
-                            <div class="info-value">{{ "%.4f"|format(last_epoch.info_spend) }} €</div>
+                            <div class="info-value" id="cost-value">{{ "%.4f"|format(last_epoch.info_spend) }} €</div>
                         </div>
                         <div class="info-item">
                             <div class="info-label">Net Edge</div>
-                            <div class="info-value">{{ "%.4f"|format(last_epoch.net_edge) }} €</div>
+                            <div class="info-value" id="netedge-value">{{ "%.4f"|format(last_epoch.net_edge) }} €</div>
                         </div>
                         <div class="info-item">
                             <div class="info-label">Total Spend</div>
-                            <div class="info-value">{{ "%.4f"|format(last_epoch.info_spend_total) }} €</div>
+                            <div class="info-value" id="totalspend-value">{{ "%.4f"|format(last_epoch.info_spend_total) }} €</div>
                         </div>
                     </div>
                     {% if last_epoch.premium_tx %}
-                        <div class="tx-hash">
+                        <div class="tx-hash" id="premium-tx">
                             premium_tx: <a href="https://base-sepolia-testnet-explorer.skalenodes.com:10032/tx/{{ last_epoch.premium_tx }}" target="_blank">{{ last_epoch.premium_tx[:18] }}...</a>
                         </div>
                     {% endif %}
@@ -466,30 +222,30 @@
 
                 {% if last_epoch.crisis %}
                     {% if last_epoch.crisis.startswith("✅") %}
-                        <div style="margin-top: 15px; padding: 12px; background: rgba(0, 230, 118, 0.1); border-radius: 8px; border-left: 4px solid #00e676;">
+                        <div style="margin-top: 15px; padding: 12px; background: rgba(0, 230, 118, 0.1); border-radius: 8px; border-left: 4px solid #00e676;" id="crisis-stable">
                             ✅ {{ last_epoch.crisis }}
                         </div>
                     {% else %}
-                        <div class="crisis-alert">
+                        <div class="crisis-alert" id="crisis-alert">
                             ⚠️ {{ last_epoch.crisis }}
                         </div>
                     {% endif %}
                 {% endif %}
 
                 {% if last_epoch.survival_mode %}
-                    <div class="survival-mode">
+                    <div class="survival-mode" id="survival-mode">
                         🛡️ SURVIVAL MODE ACTIVE — Capital preservation priority
                     </div>
                 {% endif %}
             </div>
 
-            <div class="card">
+            <div class="card" id="assets-card">
                 <h2>🏭 Energy Assets</h2>
-                <div class="metric">{{ asset_count }}</div>
+                <div class="metric" id="assets-metric">{{ asset_count }}</div>
                 <span class="metric-label">Tokenized production capacity</span>
-                <span class="metric-label">Total: {{ total_capacity }} kW</span>
+                <span class="metric-label" id="capacity-label">Total: {{ total_capacity }} kW</span>
 
-                <div class="assets-list">
+                <div class="assets-list" id="assets-list">
                     {% for a in last_assets %}
                         <div class="asset-item">
                             ⚡ {{ a.id }} | {{ a.capacity_kw|int }} kW | {{ (a.efficiency * 100)|round(0) }}% eff.
@@ -498,13 +254,13 @@
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card" id="treasury-card">
                 <h2>💰 Treasury</h2>
-                <div class="metric">{{ cash }} €</div>
+                <div class="metric" id="cash-metric">{{ cash }} €</div>
                 <span class="metric-label">Liquid reserves</span>
                 <span class="metric-label">Available for capital deployment</span>
 
-                <div style="margin-top: 25px; padding: 15px; background: rgba(0, 0, 0, 0.2); border-radius: 10px;">
+                <div style="margin-top: 25px; padding: 15px; background: rgba(0, 0, 0, 0.2); border-radius: 10px;" id="last-decision">
                     <strong>Last Decision:</strong> {{ last_epoch.decision.replace('_', ' ').title() }}
                     {% if last_epoch.tx_hash %}
                         <div class="tx-hash">
@@ -515,9 +271,7 @@
             </div>
         </div>
 
-        <!-- MODIFICATION ICI : Nouvelle grille avec rationales intégrées -->
         <div class="grid-bottom">
-            
             <div class="card">
                 <h2>🎛️ Capital Allocation</h2>
                 <div class="philosophy">
@@ -540,38 +294,35 @@
                     <button onclick="runEpoch()" id="runBtn" style="flex:1;">▶ Run Capital Epoch</button>
                     <button onclick="runCinematicStream()" id="cinBtn" class="btn-secondary" style="flex:1;">🎬 Run Cinematic Demo</button>
                 </div>
-                <button onclick="runDemo()" id="demoBtn" style="width:100%; margin-left:0; margin-right:0;">🚀 SKALE Settlement Demo</button>
+                <button onclick="runDemo()" id="demoBtn" style="width:100%; margin-top:10px;">🚀 SKALE Settlement Demo</button>
 
                 <div id="result"></div>
 
                 <div class="rationale-section">
                     <h3>🧾 Decision Rationale</h3>
-                    {% if last_epoch and last_epoch.rationale %}
-                        <ul class="rationale">
+                    <ul class="rationale" id="rationale-list">
+                        {% if last_epoch and last_epoch.rationale %}
                             {% for r in last_epoch.rationale %}
                                 <li>{{ r }}</li>
                             {% endfor %}
-                        </ul>
-                        {% if last_epoch.policy_meta %}
-                            <div class="meta">
-                                <small>
-                                    thresholds: normal={{ last_epoch.policy_meta.threshold_normal }},
-                                    crisis={{ last_epoch.policy_meta.threshold_crisis }}<br>
-                                    cooldown: {{ last_epoch.policy_meta.cooldown_remaining }}
-                                </small>
-                            </div>
+                        {% else %}
+                            <li>Run an epoch to see the agent's logic trace.</li>
                         {% endif %}
-                    {% else %}
-                        <p style="opacity:0.7; margin-top:15px; font-style: italic; font-size:0.9em;">
-                            Run an epoch to see the agent's logic trace.
-                        </p>
+                    </ul>
+                    {% if last_epoch.policy_meta %}
+                        <div class="meta" id="policy-meta">
+                            thresholds: normal={{ last_epoch.policy_meta.threshold_normal }},
+                            crisis={{ last_epoch.policy_meta.threshold_crisis }},
+                            dip={{ last_epoch.policy_meta.threshold_dip }}<br>
+                            cooldown: {{ last_epoch.policy_meta.cooldown_remaining }}
+                        </div>
                     {% endif %}
                 </div>
             </div>
 
             <div class="card">
                 <h2>📈 NAV Growth Curve</h2>
-                <div class="chart-container" style="height: 500px;">
+                <div class="chart-container">
                     <canvas id="navChart"></canvas>
                 </div>
             </div>
@@ -579,160 +330,44 @@
     </div>
 
     <script>
-        // Slider interaction
         const slider = document.getElementById('riskSlider');
         const valueDisplay = document.getElementById('riskValue');
+        slider.oninput = function() { valueDisplay.textContent = this.value; };
 
-        slider.oninput = function() {
-            valueDisplay.textContent = this.value;
-        };
-
-        // Run Epoch
-        async function runEpoch() {
-            const btn = document.getElementById('runBtn');
-            const resultDiv = document.getElementById('result');
-            btn.disabled = true;
-            btn.textContent = '⏳ Running...';
-
-            try {
-                const risk = slider.value;
-                const response = await fetch('/epoch', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ risk_tolerance: parseFloat(risk) })
-                });
-
-                const data = await response.json();
-
-                resultDiv.className = 'show';
-                resultDiv.innerHTML = `
-                    <strong>✅ Epoch ${data.step} completed</strong><br>
-                    NAV: ${data.nav} € | Decision: ${data.decision.replace('_', ' ')}<br>
-                    ${data.tx_hash ? `TX: <a href="https://base-sepolia-testnet-explorer.skalenodes.com:10032/tx/${data.tx_hash}" target="_blank">${data.tx_hash.substring(0, 12)}...</a>` : ''}
-                `;
-
-                // Reload page to update dashboard
-                setTimeout(() => {
-                    location.reload();
-                }, 1200);
-
-            } catch (error) {
-                resultDiv.className = 'show';
-                resultDiv.innerHTML = `<strong>❌ Error:</strong> ${error.message}`;
-                btn.disabled = false;
-                btn.textContent = '▶ Run Epoch';
-            }
-        }
-
-        // Run Cinematic Demo
-        async function runCinematicDemo() {
-            const btn = document.getElementById('cinBtn');
-            const resultDiv = document.getElementById('result');
-            btn.disabled = true;
-            btn.textContent = '🎬 Running...';
-
-            try {
-                const risk = slider.value;
-                const response = await fetch('/cinematic/run', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ risk_tolerance: parseFloat(risk) })
-                });
-
-                const data = await response.json();
-
-                resultDiv.className = 'show';
-                resultDiv.innerHTML = `
-                    <strong>🎬 Cinematic demo completed</strong><br>
-                    ${data.summary.nav_start} € → ${data.summary.nav_end} €<br>
-                    Premium epochs: ${data.summary.premium_epochs}<br>
-                    Blackouts avoided: ${data.summary.blackout_avoided}<br>
-                    Final decision: ${data.summary.final_decision}
-                `;
-
-                // Reload page to update dashboard
-                setTimeout(() => {
-                    location.reload();
-                }, 1500);
-
-            } catch (error) {
-                resultDiv.className = 'show';
-                resultDiv.innerHTML = `<strong>❌ Error:</strong> ${error.message}`;
-                btn.disabled = false;
-                btn.textContent = '🎬 Cinematic';
-            }
-        }
-
-        // Run SKALE Demo
-        async function runDemo() {
-            const btn = document.getElementById('demoBtn');
-            const resultDiv = document.getElementById('result');
-            btn.disabled = true;
-            btn.textContent = '🚀 Sending...';
-
-            try {
-                const response = await fetch('/demo', { method: 'POST' });
-                const data = await response.json();
-
-                resultDiv.className = 'show';
-                if (data.status === 'success') {
-                    resultDiv.innerHTML = `
-                        <strong>✅ ${data.message}</strong><br>
-                        TX: <a href="${data.explorer}" target="_blank">${data.tx_hash.substring(0, 12)}...</a>
-                    `;
-                } else {
-                    resultDiv.innerHTML = `<strong>❌ ${data.message}</strong>`;
-                }
-
-                // Reload page to update dashboard
-                setTimeout(() => {
-                    location.reload();
-                }, 1500);
-
-            } catch (error) {
-                resultDiv.className = 'show';
-                resultDiv.innerHTML = `<strong>❌ Error:</strong> ${error.message}`;
-                btn.disabled = false;
-                btn.textContent = '🚀 SKALE Settlement Demo';
-            }
-        }
-        
-
-        // ✅ Graphique dynamique pendant la cinématique
+        // Chart init
         let cinematicChart = null;
-        let cinematicChartCtx = null;
-
-        function initCinematicChart() {
-            const canvas = document.getElementById('navChart');
-            if (!canvas) return;
-            
-            cinematicChartCtx = canvas.getContext('2d');
-            
-            // Si un chart existe déjà, détruis-le proprement
-            if (cinematicChart) {
-                cinematicChart.destroy();
-            }
-            
-            // Création du chart vide (prêt à être mis à jour)
-            cinematicChart = new Chart(cinematicChartCtx, {
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('navChart').getContext('2d');
+            const navHistory = {{ nav_history_json|safe }};
+            const steps = navHistory.map(e => e.step);
+            const navs = navHistory.map(e => e.nav);
+            const hwms = navHistory.map(e => e.hwm);
+            const colors = navHistory.map(e => {
+                if (e.regime === 'CRISIS') return 'rgba(255, 23, 68, 0.8)';
+                if (e.regime === 'STRESS') return 'rgba(255, 193, 7, 0.8)';
+                return 'rgba(0, 230, 118, 0.8)';
+            });
+            cinematicChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: [],
+                    labels: steps,
                     datasets: [
                         {
                             label: 'NAV',
-                            data: [],
+                            data: navs,
                             borderColor: 'rgb(106, 17, 203)',
                             backgroundColor: 'rgba(106, 17, 203, 0.1)',
                             borderWidth: 3,
                             fill: true,
                             tension: 0.3,
+                            pointBackgroundColor: colors,
+                            pointBorderColor: colors,
                             pointRadius: 6,
                             pointHoverRadius: 10
                         },
                         {
                             label: 'High Water Mark',
-                            data: [],
+                            data: hwms,
                             borderColor: 'rgba(0, 230, 118, 0.7)',
                             borderWidth: 2,
                             borderDash: [5, 5],
@@ -748,11 +383,7 @@
                     plugins: {
                         legend: {
                             position: 'top',
-                            labels: {
-                                color: '#fff',
-                                padding: 20,
-                                font: { size: 13 }
-                            }
+                            labels: { color: '#fff', padding: 20, font: { size: 13 } }
                         }
                     },
                     scales: {
@@ -768,289 +399,175 @@
                             beginAtZero: false
                         }
                     },
-                    interaction: {
-                        intersect: false,
-                        mode: 'index'
-                    }
+                    interaction: { intersect: false, mode: 'index' }
                 }
             });
-        }
+        });
 
-        // ✅ Mise à jour du graphique avec nouvelles données
+        // Update chart dynamically
         function updateChartWithHistory(navHistory) {
             if (!cinematicChart) return;
-            
             const steps = navHistory.map(e => e.step);
             const navs = navHistory.map(e => e.nav);
             const hwms = navHistory.map(e => e.hwm);
-            
-            cinematicChart.data.labels = steps;
-            cinematicChart.data.datasets[0].data = navs;
-            cinematicChart.data.datasets[1].data = hwms;
-            
-            // Couleurs dynamiques selon le régime
             const colors = navHistory.map(e => {
                 if (e.regime === 'CRISIS') return 'rgba(255, 23, 68, 0.8)';
                 if (e.regime === 'STRESS') return 'rgba(255, 193, 7, 0.8)';
                 return 'rgba(0, 230, 118, 0.8)';
             });
-            
+            cinematicChart.data.labels = steps;
+            cinematicChart.data.datasets[0].data = navs;
+            cinematicChart.data.datasets[1].data = hwms;
             cinematicChart.data.datasets[0].pointBackgroundColor = colors;
             cinematicChart.data.datasets[0].pointBorderColor = colors;
-            
-            cinematicChart.update('active'); // Animation fluide
+            cinematicChart.update('active');
         }
 
+        // Update dashboard dynamically
+        function updateDashboardFromEvent(dash) {
+            if (!dash) return;
+            document.getElementById('nav-metric').textContent = `${dash.current_nav} €`;
+            document.getElementById('hwm-label').innerHTML = `High Water Mark: ${dash.hwm} €<br>Drawdown: ${(dash.drawdown * 100).toFixed(2)}%`;
+            document.getElementById('regime-label').innerHTML = `Regime: ${dash.regime} <span class="regime-badge regime-${dash.regime}">${dash.regime}</span>`;
+            document.getElementById('info-badge').innerHTML = `Info Market: ${dash.used_premium ? '<span class="premium-badge">PREMIUM USED</span>' : '<span class="free-badge">FREE FORECAST</span>'}`;
+            document.getElementById('evpi-value').textContent = `${dash.evpi} €`;
+            document.getElementById('cost-value').textContent = `${dash.info_spend} €`;
+            document.getElementById('netedge-value').textContent = `${dash.net_edge} €`;
+            document.getElementById('totalspend-value').textContent = `${dash.info_spend_total} €`;
+            document.getElementById('cash-metric').textContent = `${dash.cash} €`;
+            document.getElementById('assets-metric').textContent = `${dash.asset_count}`;
+            document.getElementById('capacity-label').textContent = `Total: ${dash.total_capacity} kW`;
+            document.getElementById('assets-list').innerHTML = dash.last_assets.map(a => 
+                `<div class="asset-item">⚡ ${a.id} | ${Math.round(a.capacity_kw)} kW | ${Math.round(a.efficiency * 100)}% eff.</div>`
+            ).join('');
+            document.getElementById('last-decision').innerHTML = `<strong>Last Decision:</strong> ${dash.decision.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}` + 
+                (dash.tx_hash ? `<div class="tx-hash">SKALE TX: <a href="https://base-sepolia-testnet-explorer.skalenodes.com:10032/tx/${dash.tx_hash}" target="_blank">${dash.tx_hash.substring(0, 12)}...</a></div>` : '');
+            if (dash.crisis.includes('✅')) {
+                document.getElementById('crisis-stable').innerHTML = `✅ ${dash.crisis}`;
+                document.getElementById('crisis-alert')?.style.setProperty('display', 'none');
+            } else {
+                document.getElementById('crisis-alert').innerHTML = `⚠️ ${dash.crisis}`;
+                document.getElementById('crisis-alert').style.setProperty('display', 'block');
+                document.getElementById('crisis-stable')?.style.setProperty('display', 'none');
+            }
+            document.getElementById('survival-mode').style.setProperty('display', dash.survival_mode ? 'block' : 'none');
+            document.getElementById('rationale-list').innerHTML = dash.rationale.map(r => `<li>${r}</li>`).join('') || '<li>Waiting for decision...</li>';
+            if (dash.policy_meta) {
+                document.getElementById('policy-meta').innerHTML = `thresholds: normal=${dash.policy_meta.threshold_normal}, crisis=${dash.policy_meta.threshold_crisis}, dip=${dash.policy_meta.threshold_dip}<br>cooldown: ${dash.policy_meta.cooldown_remaining}`;
+            }
+            if (dash.premium_tx) {
+                document.getElementById('premium-tx').innerHTML = `premium_tx: <a href="https://base-sepolia-testnet-explorer.skalenodes.com:10032/tx/${dash.premium_tx}" target="_blank">${dash.premium_tx.substring(0, 18)}...</a>`;
+                document.getElementById('premium-tx').style.setProperty('display', 'block');
+            } else {
+                document.getElementById('premium-tx')?.style.setProperty('display', 'none');
+            }
+        }
 
-        // ✅ Streaming SSE pour la cinématique
+        // Run Epoch
+        async function runEpoch() {
+            const btn = document.getElementById('runBtn');
+            const resultDiv = document.getElementById('result');
+            btn.disabled = true;
+            btn.textContent = '⏳ Running...';
+            try {
+                const risk = slider.value;
+                const res = await fetch('/epoch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ risk_tolerance: parseFloat(risk) })
+                });
+                const data = await res.json();
+                resultDiv.className = 'show';
+                resultDiv.innerHTML = `<strong>✅ Epoch ${data.step} completed</strong><br>NAV: ${data.nav}€ | Decision: ${data.decision.replace('_', ' ')}`;
+                setTimeout(() => location.reload(), 1200);
+            } catch (e) {
+                resultDiv.className = 'show';
+                resultDiv.innerHTML = `<strong>❌ Error:</strong> ${e.message}`;
+                btn.disabled = false;
+                btn.textContent = '▶ Run Capital Epoch';
+            }
+        }
+
+        // Run Demo
+        async function runDemo() {
+            const btn = document.getElementById('demoBtn');
+            const resultDiv = document.getElementById('result');
+            btn.disabled = true;
+            btn.textContent = '🚀 Sending...';
+            try {
+                const res = await fetch('/demo', { method: 'POST' });
+                const data = await res.json();
+                resultDiv.className = 'show';
+                resultDiv.innerHTML = data.status === 'success' ? 
+                    `<strong>✅ ${data.message}</strong><br>TX: <a href="${data.explorer}" target="_blank">${data.tx_hash.substring(0, 12)}...</a>` : 
+                    `<strong>❌ ${data.message}</strong>`;
+                setTimeout(() => { btn.disabled = false; btn.textContent = '🚀 SKALE Settlement Demo'; }, 1500);
+            } catch (e) {
+                resultDiv.className = 'show';
+                resultDiv.innerHTML = `<strong>❌ Error:</strong> ${e.message}`;
+                btn.disabled = false;
+                btn.textContent = '🚀 SKALE Settlement Demo';
+            }
+        }
+
+        // Run Cinematic Stream (SSE)
         async function runCinematicStream() {
             const btn = document.getElementById('cinBtn');
+            const runBtn = document.getElementById('runBtn');
+            const demoBtn = document.getElementById('demoBtn');
             const resultDiv = document.getElementById('result');
-            
-            // Désactive les boutons
             btn.disabled = true;
+            runBtn.disabled = true;
+            demoBtn.disabled = true;
             btn.textContent = '🎬 Streaming...';
-            document.getElementById('runBtn').disabled = true;
-            document.getElementById('demoBtn').disabled = true;
-            
-            // Cache le résultat précédent
             resultDiv.className = '';
             resultDiv.innerHTML = '';
-            
-            // ✅ Initialise le graphique vide
-            initCinematicChart();
-            
             try {
-                const risk = document.getElementById('riskSlider').value;
+                const risk = slider.value;
                 const eventSource = new EventSource(`/cinematic/stream?risk_tolerance=${risk}`);
-                
                 eventSource.onmessage = function(event) {
                     const data = JSON.parse(event.data);
-                    
                     if (data.type === 'epoch') {
-                        // ✅ Mets à jour le graphique en temps réel
-                        if (data.chart_update && data.chart_update.nav_history) {
-                            updateChartWithHistory(data.chart_update.nav_history);
-                        }
-                        
-                        // Affiche l'étape dans le résultat
+                        if (data.chart_update) updateChartWithHistory(data.chart_update.nav_history);
+                        if (data.dashboard_update) updateDashboardFromEvent(data.dashboard_update);
                         resultDiv.className = 'show';
-                        resultDiv.innerHTML = `
-                            <strong>🎬 ${data.label}</strong><br>
-                            Step ${data.step} | NAV: ${data.nav}€ | Decision: ${data.decision.replace('_', ' ')}<br>
-                            ${data.crisis && !data.crisis.includes('✅') ? `⚠️ ${data.crisis}` : ''}
-                            ${data.used_premium ? `💎 Premium used (Net Edge: ${data.net_edge}€)` : ''}
-                        `;
+                        resultDiv.innerHTML = `<strong>🎬 ${data.label}</strong><br>Step ${data.step} | NAV: ${data.nav}€ | Decision: ${data.decision.replace('_', ' ')}${data.used_premium ? '<br>💎 Premium used' : ''}`;
                     }
-                    
-                    if (data.type === 'status') {
-                        resultDiv.innerHTML += `<br><small>${data.message}</small>`;
-                    }
-                    
-                    if (data.type === 'settlement') {
-                        if (data.result.status === 'success') {
-                            resultDiv.innerHTML += `<br>✅ Settlement: ${data.result.tx_hash.substring(0, 12)}...`;
-                        }
-                    }
-                    
+                    if (data.type === 'status') resultDiv.innerHTML += `<br><small>${data.message}</small>`;
+                    if (data.type === 'settlement' && data.result.status === 'success') resultDiv.innerHTML += `<br>✅ Settlement: ${data.result.tx_hash.substring(0, 12)}...`;
                     if (data.type === 'summary') {
-                        // ✅ Dernière mise à jour du graphique avec tous les points
-                        if (data.chart_final && data.chart_final.nav_history) {
-                            updateChartWithHistory(data.chart_final.nav_history);
-                        }
-                        
-                        resultDiv.innerHTML = `
-                            <strong>🎬 Cinematic Complete!</strong><br>
-                            ${data.summary.nav_start}€ → ${data.summary.nav_end}€ (${data.summary.nav_delta > 0 ? '+' : ''}${data.summary.nav_delta}€)<br>
-                            Premium epochs: ${data.summary.premium_epochs}<br>
-                            Blackouts avoided: ${data.summary.blackout_avoided}<br>
-                            Final decision: ${data.summary.final_decision}
-                        `;
+                        if (data.chart_final) updateChartWithHistory(data.chart_final.nav_history);
+                        if (data.dashboard_final) updateDashboardFromEvent(data.dashboard_final);
+                        resultDiv.innerHTML = `<strong>🎬 Cinematic Complete!</strong><br>${data.summary.nav_start}€ → ${data.summary.nav_end}€ (${data.summary.nav_delta > 0 ? '+' : ''}${data.summary.nav_delta}€)<br>Premium epochs: ${data.summary.premium_epochs}<br>Blackouts avoided: ${data.summary.blackout_avoided}`;
                     }
-                    
                     if (data.type === 'done') {
                         eventSource.close();
                         setTimeout(() => {
                             btn.disabled = false;
+                            runBtn.disabled = false;
+                            demoBtn.disabled = false;
                             btn.textContent = '🎬 Run Cinematic Demo';
-                            document.getElementById('runBtn').disabled = false;
-                            document.getElementById('demoBtn').disabled = false;
                         }, 1500);
                     }
                 };
-                
-                eventSource.onerror = function(err) {
-                    console.error('EventSource failed:', err);
+                eventSource.onerror = function() {
                     resultDiv.className = 'show';
                     resultDiv.innerHTML = '<strong>❌ Streaming error</strong>';
                     eventSource.close();
                     btn.disabled = false;
+                    runBtn.disabled = false;
+                    demoBtn.disabled = false;
                     btn.textContent = '🎬 Run Cinematic Demo';
-                    document.getElementById('runBtn').disabled = false;
-                    document.getElementById('demoBtn').disabled = false;
                 };
-                
-            } catch (error) {
+            } catch (e) {
                 resultDiv.className = 'show';
-                resultDiv.innerHTML = `<strong>❌ Error:</strong> ${error.message}`;
+                resultDiv.innerHTML = `<strong>❌ Error:</strong> ${e.message}`;
                 btn.disabled = false;
+                runBtn.disabled = false;
+                demoBtn.disabled = false;
                 btn.textContent = '🎬 Run Cinematic Demo';
-                document.getElementById('runBtn').disabled = false;
-                document.getElementById('demoBtn').disabled = false;
             }
         }
-
-        // Chart.js initialization
-        document.addEventListener('DOMContentLoaded', function() {
-            const navHistory = {{ nav_history_json|safe }};
-            
-            if (navHistory.length > 0) {
-                const ctx = document.getElementById('navChart').getContext('2d');
-                
-                const steps = navHistory.map(e => e.step);
-                const navs = navHistory.map(e => e.nav);
-                const hwms = navHistory.map(e => e.hwm);
-                const drawdowns = navHistory.map(e => e.drawdown * 100);
-                
-                // Find deployment steps
-                const deploySteps = navHistory
-                    .filter(e => e.decision === 'deploy_capital')
-                    .map(e => e.step);
-                
-                // Colors based on regime
-                const colors = navHistory.map(e => {
-                    if (e.regime === 'CRISIS') return 'rgba(255, 23, 68, 0.8)';
-                    if (e.regime === 'STRESS') return 'rgba(255, 193, 7, 0.8)';
-                    return 'rgba(0, 230, 118, 0.8)';
-                });
-                
-                // Point styles: triangle for deployments, circle otherwise
-                const pointStyles = navHistory.map(e => 
-                    e.decision === 'deploy_capital' ? 'triangle' : 'circle'
-                );
-                
-                // Point sizes: bigger for deployments
-                const pointSizes = navHistory.map(e => 
-                    e.decision === 'deploy_capital' ? 10 : 6
-                );
-                
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: steps,
-                        datasets: [
-                            {
-                                label: 'NAV',
-                                data: navs,
-                                borderColor: 'rgb(106, 17, 203)',
-                                backgroundColor: 'rgba(106, 17, 203, 0.1)',
-                                borderWidth: 3,
-                                fill: true,
-                                tension: 0.3,
-                                pointBackgroundColor: colors,
-                                pointBorderColor: colors,
-                                pointRadius: pointSizes,
-                                pointHoverRadius: 12,
-                                pointStyle: pointStyles
-                            },
-                            {
-                                label: 'High Water Mark',
-                                data: hwms,
-                                borderColor: 'rgba(0, 230, 118, 0.7)',
-                                borderWidth: 2,
-                                borderDash: [5, 5],
-                                fill: false,
-                                tension: 0.3,
-                                pointRadius: 0
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    afterLabel: function(context) {
-                                        const epoch = navHistory[context.dataIndex];
-                                        let extra = `\nRegime: ${epoch.regime}`;
-                                        extra += `\nDecision: ${epoch.decision.replace('_', ' ')}`;
-                                        if (epoch.crisis && !epoch.crisis.includes('✅')) {
-                                            extra += `\nCrisis: ${epoch.crisis}`;
-                                        }
-                                        if (epoch.used_premium) {
-                                            extra += `\nInfo: PREMIUM (Net Edge: ${epoch.net_edge}€)`;
-                                        }
-                                        return extra;
-                                    }
-                                }
-                            },
-                            legend: {
-                                position: 'top',
-                                labels: {
-                                    color: '#fff',
-                                    padding: 20,
-                                    font: {
-                                        size: 13
-                                    }
-                                }
-                            },
-                            annotation: {
-                                annotations: deploySteps.reduce((acc, step, idx) => {
-                                    acc[`deploy-${idx}`] = {
-                                        type: 'line',
-                                        xMin: step,
-                                        xMax: step,
-                                        borderColor: 'rgba(255, 23, 68, 0.5)',
-                                        borderWidth: 2,
-                                        borderDash: [5, 5],
-                                        label: {
-                                            content: 'Deploy',
-                                            enabled: true,
-                                            position: 'top'
-                                        }
-                                    };
-                                    return acc;
-                                }, {})
-                            }
-                        },
-                        scales: {
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Epoch',
-                                    color: '#aaa'
-                                },
-                                grid: {
-                                    color: 'rgba(255, 255, 255, 0.05)'
-                                },
-                                ticks: {
-                                    color: '#aaa'
-                                }
-                            },
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: 'Value (€)',
-                                    color: '#aaa'
-                                },
-                                grid: {
-                                    color: 'rgba(255, 255, 255, 0.05)'
-                                },
-                                ticks: {
-                                    color: '#aaa'
-                                },
-                                beginAtZero: false
-                            }
-                        },
-                        interaction: {
-                            intersect: false,
-                            mode: 'index'
-                        }
-                    }
-                });
-            }
-        });
     </script>
 </body>
 </html>
