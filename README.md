@@ -1,5 +1,7 @@
 # ⚡ AI Energy Capital Entity — Autonomous On-Chain Energy Allocator
 
+![Dashboard Preview](images/dashboard.png)
+
 > An autonomous economic agent that treats **information as a tradable commodity** — buying premium forecasts only when their marginal value exceeds cost, surviving crises via drawdown-aware policy, and settling capital deployments on-chain via **SKALE**.
 
 ---
