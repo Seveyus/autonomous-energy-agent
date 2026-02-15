@@ -128,7 +128,7 @@ Run `/cinematic/run` to trigger a **pre-scripted narrative** that demonstrates a
 4. **Recovery (3 epochs)** → Agent survives via cash buffer + regime-aware policy
 5. **Settlement** → On-chain SKALE tx proving capital deployment
 
-✅ **Why judges love this**: No "trust us" — the UI *shows* the agent surviving a crisis *because* it bought better information earlier.
+
 
 ---
 
