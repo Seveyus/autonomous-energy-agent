@@ -26,8 +26,7 @@ rather than a bare action, so the reasoning can be audited after the fact.
   drawdown-aware survival mode, and a cash buffer that must survive the
   allocation before capital is deployed.
 - **Settlement** (`skale_payment.py`) — micropayments and on-chain settlement of
-  capital deployments. Fully optional: set `ENABLE_ONCHAIN=false` and the agent
-  runs as a pure simulation.
+  capital deployments.
 - **Dashboard** (`templates/dashboard.html`) — NAV curve, asset state, and the
   information market, streamed over SSE.
 
@@ -36,9 +35,21 @@ rather than a bare action, so the reasoning can be audited after the fact.
 ```bash
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env          # ENABLE_ONCHAIN=false for simulation only
+cp .env.example .env
 uvicorn main:app --port 8000
 ```
+
+**It will not start as-is.** `skale_payment.py` opens an RPC connection at
+import time and raises if it fails, and the testnet endpoint this was built
+against no longer resolves. `send_payment` then refuses without a private key,
+so `/epoch` fails even once the import succeeds. `ENABLE_ONCHAIN=false` is read
+nowhere in that path — an earlier version of this README claimed otherwise, and
+that was wrong.
+
+To run the decision logic today, replace `skale_payment.py` with a local stub
+exposing `address`, `SKALE_PAYMENTS_ENABLED` and a `send_payment` returning
+something with a `.hex()`. The policy, the expected-value calculation and the
+accounting are untouched by that substitution.
 
 | Endpoint | Purpose |
 |---|---|
@@ -57,7 +68,8 @@ the implementation.
 - 713 lines and a single test. The EVPI calculation is the interesting part; the
   surrounding machinery is not hardened.
 - The on-chain path is a demonstration of settlement mechanics, not a
-  production integration.
+  production integration — and it is now a demonstration of their shelf life,
+  since the network it settled against is gone.
 - There is no hosted deployment.
 
 The idea it was built to test — that an agent should decide when information is
